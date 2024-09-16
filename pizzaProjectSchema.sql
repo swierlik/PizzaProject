@@ -1,5 +1,5 @@
 CREATE TABLE `Customer` (
-  `CustomerID` integer PRIMARY KEY,
+  `CustomerID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `Gender` varchar(255),
   `Birthdate` date,
@@ -13,7 +13,7 @@ CREATE TABLE `Customer` (
 );
 
 CREATE TABLE `Pizza` (
-  `PizzaID` integer PRIMARY KEY,
+  `PizzaID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `Description` text,
   `Price` decimal,
@@ -22,25 +22,25 @@ CREATE TABLE `Pizza` (
 );
 
 CREATE TABLE `Ingredient` (
-  `IngredientID` integer PRIMARY KEY,
+  `IngredientID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `Cost` decimal
 );
 
 CREATE TABLE `Drink` (
-  `DrinkID` integer PRIMARY KEY,
+  `DrinkID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `Price` decimal
 );
 
 CREATE TABLE `Dessert` (
-  `DessertID` integer PRIMARY KEY,
+  `DessertID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `Price` decimal
 );
 
 CREATE TABLE `Order` (
-  `OrderID` integer PRIMARY KEY,
+  `OrderID` integer PRIMARY KEY AUTO_INCREMENT,
   `CustomerID` integer,
   `OrderDate` timestamp,
   `OrderStatus` varchar(255),
@@ -51,7 +51,7 @@ CREATE TABLE `Order` (
 );
 
 CREATE TABLE `OrderItem` (
-  `OrderItemID` integer PRIMARY KEY,
+  `OrderItemID` integer PRIMARY KEY AUTO_INCREMENT,
   `OrderID` integer,
   `ItemType` varchar(255) COMMENT 'Pizza, Drink, Dessert',
   `ItemID` integer,
@@ -60,7 +60,7 @@ CREATE TABLE `OrderItem` (
 );
 
 CREATE TABLE `DiscountCode` (
-  `DiscountCodeID` integer PRIMARY KEY,
+  `DiscountCodeID` integer PRIMARY KEY AUTO_INCREMENT,
   `Code` varchar(255),
   `Description` text,
   `IsRedeemed` boolean,
@@ -73,14 +73,14 @@ CREATE TABLE `CustomerDiscount` (
 );
 
 CREATE TABLE `DeliveryPerson` (
-  `DeliveryPersonID` integer PRIMARY KEY,
+  `DeliveryPersonID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `AssignedPostalCode` varchar(255),
   `IsAvailable` boolean
 );
 
 CREATE TABLE `Delivery` (
-  `DeliveryID` integer PRIMARY KEY,
+  `DeliveryID` integer PRIMARY KEY AUTO_INCREMENT,
   `OrderID` integer,
   `DeliveryPersonID` integer,
   `DeliveryStatus` varchar(255),
@@ -88,7 +88,7 @@ CREATE TABLE `Delivery` (
 );
 
 CREATE TABLE `EarningsReport` (
-  `ReportID` integer PRIMARY KEY,
+  `ReportID` integer PRIMARY KEY AUTO_INCREMENT,
   `Month` integer,
   `Year` integer,
   `TotalEarnings` decimal,
