@@ -69,8 +69,12 @@ CREATE TABLE `DiscountCode` (
 
 CREATE TABLE `CustomerDiscount` (
   `CustomerID` integer,
-  `DiscountCodeID` integer
+  `DiscountCodeID` integer,
+  PRIMARY KEY (`CustomerID`, `DiscountCodeID`),
+  FOREIGN KEY (`CustomerID`) REFERENCES `Customer` (`CustomerID`),
+  FOREIGN KEY (`DiscountCodeID`) REFERENCES `DiscountCode` (`DiscountCodeID`)
 );
+
 
 CREATE TABLE `DeliveryPerson` (
   `DeliveryPersonID` integer PRIMARY KEY AUTO_INCREMENT,
@@ -99,8 +103,12 @@ CREATE TABLE `EarningsReport` (
 
 CREATE TABLE `PizzaIngredient` (
   `PizzaID` integer,
-  `IngredientID` integer
+  `IngredientID` integer,
+  PRIMARY KEY (`PizzaID`, `IngredientID`),
+  FOREIGN KEY (`PizzaID`) REFERENCES `Pizza` (`PizzaID`),
+  FOREIGN KEY (`IngredientID`) REFERENCES `Ingredient` (`IngredientID`)
 );
+
 
 ALTER TABLE `Order` ADD FOREIGN KEY (`CustomerID`) REFERENCES `Customer` (`CustomerID`);
 
