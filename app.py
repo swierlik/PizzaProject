@@ -10,13 +10,12 @@ from db import Base, engine
 from products.pizza import Pizza
 from products.drink import Drink
 from products.dessert import Dessert
-from models import Order, OrderItem  # Assuming you have these models defined
-from item_types import ItemType  # Enum for item types
+
 
 app = Flask(__name__)
 
 # Database configuration
-engine = create_engine('sqlite:///pizzeria.db')  # Update with your database URL
+engine = create_engine('mysql+pymysql://root:password@localhost/pizza_project')  # Update with your database URL
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
