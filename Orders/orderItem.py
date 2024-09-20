@@ -1,9 +1,6 @@
-# orders/OrderItem.py
-from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship
 from db import Base, session
-from datetime import datetime
-from products.dessert import Dessert  # Adjust the import path as necessary
 
 class OrderItem(Base):
     __tablename__ = 'OrderItem'
@@ -17,3 +14,22 @@ class OrderItem(Base):
     
     # Relationships
     order = relationship('Order', back_populates='order_items')
+
+    def __repr__(self):
+        return (f"<OrderItem(OrderItemID={self.OrderItemID}, OrderID={self.OrderID}, "
+                f"ItemTypeID={self.ItemTypeID}, ItemID={self.ItemID}, "
+                f"Quantity={self.Quantity}, Price={self.Price})>")
+
+# Function to add an order item
+def add_order_item(order_id, item_type_id, item_id, quantity, price):
+    new_order_item = OrderItem(
+        OrderID=order_id,
+        ItemTypeID=item_type_id,
+        ItemID=item_id,
+        Quantity=quantity,
+        Price=price
+    )
+    session.add(new_order_item)
+    session.commit()
+    print(f"OrderItem for OrderID '{order_id}' added to the database.")
+
