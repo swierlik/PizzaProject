@@ -38,3 +38,15 @@ def add_customer(name, gender, birthdate, phone_number, address, username, passw
     session.add(new_customer)
     session.commit()
     print(f"Customer '{name}' added to the database.")
+
+# Function to get a customer by username
+def get_customer_by_username(username):
+    return session.query(Customer).filter(Customer.Username == username).first()
+
+# Function to get a customer by ID
+def get_customer_by_id(customer_id):
+    return session.query(Customer).filter(Customer.CustomerID == customer_id).first()
+
+# Function to get all customers
+def get_all_customers():
+    return session.query(Customer).all()
