@@ -16,7 +16,7 @@ CREATE TABLE `Pizza` (
   `PizzaID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
   `Description` text,
-  `Price` decimal,
+  `Price` decimal(10,2),
   `IsVegetarian` boolean,
   `IsVegan` boolean
 );
@@ -24,19 +24,19 @@ CREATE TABLE `Pizza` (
 CREATE TABLE `Ingredient` (
   `IngredientID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
-  `Cost` decimal
+  `Cost` decimal(10,2)
 );
 
 CREATE TABLE `Drink` (
   `DrinkID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
-  `Price` decimal
+  `Price` decimal(10,2)
 );
 
 CREATE TABLE `Dessert` (
   `DessertID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
-  `Price` decimal
+  `Price` decimal(10,2)
 );
 
 CREATE TABLE `Order` (
@@ -45,7 +45,7 @@ CREATE TABLE `Order` (
   `OrderDate` timestamp,
   `OrderStatus` varchar(255),
   `EstimatedDeliveryTime` timestamp,
-  `TotalPrice` decimal,
+  `TotalPrice` decimal(10,2),
   `DiscountApplied` boolean,
   `DeliveryPersonID` integer
 );
@@ -56,7 +56,7 @@ CREATE TABLE `OrderItem` (
   `ItemType` varchar(255) COMMENT 'Pizza, Drink, Dessert',
   `ItemID` integer,
   `Quantity` integer,
-  `Price` decimal
+  `Price` decimal(10,2)
 );
 
 CREATE TABLE `DiscountCode` (
@@ -91,7 +91,7 @@ CREATE TABLE `EarningsReport` (
   `ReportID` integer PRIMARY KEY AUTO_INCREMENT,
   `Month` integer,
   `Year` integer,
-  `TotalEarnings` decimal,
+  `TotalEarnings` decimal(10,2),
   `Region` varchar(255),
   `GenderFilter` varchar(255),
   `AgeFilter` varchar(255)
