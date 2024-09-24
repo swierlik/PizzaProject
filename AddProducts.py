@@ -42,7 +42,15 @@ add_ingredient("Sugar", 0.50, is_vegetarian=True, is_vegan=True)
 add_ingredient("Ham", 1.00, is_vegetarian=False, is_vegan=False)
 add_ingredient("Chicken", 1.00, is_vegetarian=False, is_vegan=False)
 add_ingredient("Beef", 1.00, is_vegetarian=False, is_vegan=False)
+add_ingredient("Vegan Cheese", 1.00, is_vegetarian=True, is_vegan=True)
 
+## Add pizzas
+add_pizza("Margherita", "Tomato, cheese, basil", [1, 2, 3, 8, 11])
+add_pizza("Pepperoni", "Tomato, cheese, pepperoni", [1, 2, 3, 4, 8, 11])
+add_pizza("Vegetarian", "Tomato, cheese, mushrooms, olives, pineapple, tomato, onion, garlic, basil, oregano", [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+add_pizza("Hawaiian", "Tomato, cheese, ham, pineapple", [1, 2, 3, 17, 7])
+add_pizza("Meat Feast", "Tomato, cheese, pepperoni, ham, chicken, beef", [1, 2, 3, 4, 17, 18, 19])
+add_pizza("Vegan", "Tomato, vegan cheese, mushrooms, olives, pineapple, tomato, onion, garlic, basil, oregano", [1, 2, 20, 5, 6, 7, 8, 9, 10, 11, 12, 13])
 
 
 

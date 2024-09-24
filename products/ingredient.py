@@ -27,13 +27,12 @@ def add_ingredient(name, cost, is_vegetarian=False, is_vegan=False):
 
 def get_price(ingredient_id):
     ingredient = session.query(Ingredient).filter(Ingredient.IngredientID == ingredient_id).first()
-    return ingredient.Cost
+    return float(ingredient.Cost)
 
 def is_vegetarian(ingredient_id):
     ingredient = session.query(Ingredient).filter(Ingredient.IngredientID == ingredient_id).first()
-    return ingredient.isVegetarian
+    return ingredient.isVegetarian  # Return the boolean directly
 
 def is_vegan(ingredient_id):
     ingredient = session.query(Ingredient).filter(Ingredient.IngredientID == ingredient_id).first()
-    return ingredient.isVegan
-
+    return ingredient.isVegan  # Return the boolean directly
