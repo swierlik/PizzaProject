@@ -8,8 +8,8 @@ import webbrowser
 from db import Base
 
 # Import Models
-from Orders.Order import Order
-from Orders.OrderItem import OrderItem
+from Orders.order import Order
+from Orders.orderItem import OrderItem
 from Orders.ItemType import ItemType
 
 from products.pizza import Pizza
