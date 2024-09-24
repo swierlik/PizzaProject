@@ -66,7 +66,8 @@ CREATE TABLE `DiscountCode` (
   `Code` varchar(255),
   `Description` text,
   `IsRedeemed` boolean,
-  `ExpiryDate` date
+  `ExpiryDate` date,
+  `DiscountPercentage` decimal(10,2)
 );
 
 CREATE TABLE `CustomerDiscount` (

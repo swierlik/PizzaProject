@@ -5,6 +5,8 @@ from products.pizza import add_pizza
 from products.drink import add_drink
 from products.dessert import add_dessert
 from products.ingredient import add_ingredient
+from Customer.customer import add_customer
+from Customer.discountCode import add_discount_code
 from db import create_all_tables
 
 
@@ -43,6 +45,9 @@ add_ingredient("Ham", 1.00, is_vegetarian=False, is_vegan=False)
 add_ingredient("Chicken", 1.00, is_vegetarian=False, is_vegan=False)
 add_ingredient("Beef", 1.00, is_vegetarian=False, is_vegan=False)
 add_ingredient("Vegan Cheese", 1.00, is_vegetarian=True, is_vegan=True)
+add_ingredient("Banana", 0.75, is_vegetarian=True, is_vegan=True)
+add_ingredient("Strawberry", 0.75, is_vegetarian=True, is_vegan=True)
+add_ingredient("Nutella", 0.75, is_vegetarian=True, is_vegan=False)
 
 ## Add pizzas
 add_pizza("Margherita", "Tomato, cheese, basil", [1, 2, 3, 8, 11])
@@ -51,7 +56,17 @@ add_pizza("Vegetarian", "Tomato, cheese, mushrooms, olives, pineapple, tomato, o
 add_pizza("Hawaiian", "Tomato, cheese, ham, pineapple", [1, 2, 3, 17, 7])
 add_pizza("Meat Feast", "Tomato, cheese, pepperoni, ham, chicken, beef", [1, 2, 3, 4, 17, 18, 19])
 add_pizza("Vegan", "Tomato, vegan cheese, mushrooms, olives, pineapple, tomato, onion, garlic, basil, oregano", [1, 2, 20, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+add_pizza("Spicy", "Tomato, cheese, pepperoni, chilli flakes, pepper", [1, 2, 3, 4, 13, 14])
+add_pizza("Cheese Feast", "Tomato, cheese, vegan cheese", [1, 2, 3, 20])
+add_pizza("Dessert", "Nutella, banana, strawberry", [1, 21, 22, 23])
+add_pizza("Fruity", "Tomato, cheese, pineapple, banana, strawberry", [1, 2, 3, 7, 21, 22])
 
+# Add a customer
+add_customer("Alice", "Female", "1990-01-01", "1234567890", "123 Fake Street", "alice", "password", "customer", "2021-01-01 00:00:00")
 
+#Add discount codes
+add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 0.9)
+add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 0.8)
+add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 0.5)
 
 

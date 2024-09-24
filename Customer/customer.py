@@ -1,3 +1,4 @@
+import hashlib
 from sqlalchemy import Column, Integer, String, Date, TIMESTAMP
 from db import Base, session
 
@@ -14,7 +15,7 @@ class Customer(Base):
     Password = Column(String(255), nullable=False)
     PizzasOrderedCount = Column(Integer, default=0)
     role = Column(String(255), nullable=False, default="customer")
-    created_at = Column(TIMESTAMP, nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False, )
 
     def __repr__(self):
         return (f"<Customer(CustomerID={self.CustomerID}, Name='{self.Name}', Gender='{self.Gender}', "
@@ -31,7 +32,7 @@ def add_customer(name, gender, birthdate, phone_number, address, username, passw
         PhoneNumber=phone_number,
         Address=address,
         Username=username,
-        Password=password,
+        Password=hash_password(password),
         role=role,
         created_at=created_at
     )
@@ -50,3 +51,17 @@ def get_customer_by_id(customer_id):
 # Function to get all customers
 def get_all_customers():
     return session.query(Customer).all()
+
+def attempt_login(username, password):
+    customer = get_customer_by_username(username)
+    if customer is None:
+        print("Customer not found.")
+        return False
+    if customer.Password == hash_password(password):
+        return True
+    return False
+
+def hash_password(password):
+    # Use hashlib with SHA-256 to hash the password
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    return hashed_password
