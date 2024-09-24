@@ -24,7 +24,9 @@ CREATE TABLE `Pizza` (
 CREATE TABLE `Ingredient` (
   `IngredientID` integer PRIMARY KEY AUTO_INCREMENT,
   `Name` varchar(255),
-  `Cost` decimal(10,2)
+  `Cost` decimal(10,2),
+  `IsVegetarian` boolean,
+  `IsVegan` boolean
 );
 
 CREATE TABLE `Drink` (

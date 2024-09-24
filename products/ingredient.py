@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy import Boolean, Column, Integer, String, Numeric
 from db import Base, session
 
 class Ingredient(Base):
@@ -7,6 +7,8 @@ class Ingredient(Base):
     IngredientID = Column(Integer, primary_key=True, autoincrement=True)
     Name = Column(String(255), nullable=False)
     Cost = Column(Numeric, nullable=False)
+    is_vegetarian = Column(Boolean, default=False)
+    is_vegan = Column(Boolean, default=False)
 
     def __repr__(self):
         return (f"<Ingredient(IngredientID={self.IngredientID}, Name='{self.Name}', Cost={self.Cost})>")
