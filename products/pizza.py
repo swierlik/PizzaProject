@@ -1,6 +1,8 @@
-# products/pizza.py
 from sqlalchemy import Column, Integer, String, Boolean, DECIMAL
 from db import Base, session
+from sqlalchemy.exc import SQLAlchemyError
+from products.pizzaIngredient import add_pizza_ingredient
+from products.ingredient import get_price
 
 # Define the Pizza class
 class Pizza(Base):
@@ -14,14 +16,35 @@ class Pizza(Base):
     IsVegan = Column(Boolean, default=False)
 
 # Function to add pizza items
-def add_pizza(name, description, price, is_vegetarian=False, is_vegan=False):
-    new_pizza = Pizza(
-        Name=name,
-        Description=description,
-        Price=price,
-        IsVegetarian=is_vegetarian,
-        IsVegan=is_vegan
-    )
-    session.add(new_pizza)
-    session.commit()
-    print(f"Pizza '{name}' added to the database.")
+def add_pizza(name, description, ingredients):
+    try:
+        price=0.0
+        for ingredient_id in ingredients:
+            price+=get_price(ingredient_id)
+        price
+
+        # Step 1: Add the new pizza
+        new_pizza = Pizza(
+            Name=name,
+            Description=description,
+            Price=price,
+            IsVegetarian=is_vegetarian,
+            IsVegan=is_vegan
+        )
+        session.add(new_pizza)
+        session.commit()
+
+        # Step 2: Get the PizzaID of the newly created pizza
+        pizza_id = new_pizza.PizzaID
+
+        # Step 3: Add each ingredient from the ingredients list to the PizzaIngredient table
+        for ingredient_id in ingredients:
+            add_pizza_ingredient(pizza_id, ingredient_id)
+
+
+        session.commit()
+        print(f"Pizza '{name}' added to the database with ingredients.")
+    
+    except SQLAlchemyError as e:
+        session.rollback()
+        print(f"Error occurred: {e}")

@@ -21,3 +21,7 @@ def add_ingredient(name, cost):
     session.commit()
     print(f"Ingredient '{name}' added to the database.")
 
+def get_price(ingredient_id):
+    ingredient = session.query(Ingredient).filter(Ingredient.IngredientID == ingredient_id).first()
+    return ingredient.Cost
+
