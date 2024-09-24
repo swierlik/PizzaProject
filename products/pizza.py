@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DECIMAL
 from db import Base, session
 from sqlalchemy.exc import SQLAlchemyError
 from products.pizzaIngredient import add_pizza_ingredient
-from products.ingredient import get_price
+from products.ingredient import get_price, is_vegetarian, is_vegan
 
 # Define the Pizza class
 class Pizza(Base):
@@ -19,9 +19,15 @@ class Pizza(Base):
 def add_pizza(name, description, ingredients):
     try:
         price=0.0
+        is_vegetarian=True
+        is_vegan=True
         for ingredient_id in ingredients:
             price+=get_price(ingredient_id)
-        price
+            if is_vegetarian(ingredient_id)==False:
+                is_vegetarian=False
+            if is_vegan(ingredient_id)==False:
+                is_vegan=False
+        price*=1.40*1.09 # 40% profit margin and 9% tax
 
         # Step 1: Add the new pizza
         new_pizza = Pizza(
