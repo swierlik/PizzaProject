@@ -39,7 +39,7 @@ CREATE TABLE `Dessert` (
   `Price` decimal(10,2)
 );
 
-CREATE TABLE `Order` (
+CREATE TABLE `Orderr` (
   `OrderID` integer PRIMARY KEY AUTO_INCREMENT,
   `CustomerID` integer,
   `OrderDate` timestamp,
