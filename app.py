@@ -1,17 +1,16 @@
-# app.py
-
 from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 import threading
 import webbrowser
 
-# Import Order and OrderItem from Orders/orderItem.py
+# Import Base from db.py
+from db import Base
+
+# Import Models
 from Orders.Order import Order
 from Orders.OrderItem import OrderItem
 from Orders.ItemType import ItemType
-
-from db import Base
 
 from products.pizza import Pizza
 from products.drink import Drink
@@ -22,8 +21,8 @@ app = Flask(__name__)
 # Database configuration
 engine = create_engine('mysql+pymysql://root:password@localhost/pizza_project')  # Update with your database URL
 Base.metadata.bind = engine
-session_factory = sessionmaker(bind=engine)
-Session = scoped_session(session_factory)
+SessionLocal = sessionmaker(bind=engine)
+Session = scoped_session(SessionLocal)
 
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5000/')
@@ -47,8 +46,8 @@ def home():
     
     return render_template('home.html', pizzas=pizzas, drinks=drinks, desserts=desserts)
 
-@app.route('/order', methods=['POST'])
-def order():
+@app.route('/place_order', methods=['POST'])  # Updated route path and function name
+def place_order():
     session = Session()
     try:
         customer_name = request.form.get('customer_name', 'Guest').strip()
@@ -75,7 +74,7 @@ def order():
             if quantity > 0:
                 order_item = OrderItem(
                     OrderID=new_order.OrderID,
-                    ItemTypeID=ItemType.PIZZA,  # Using string value
+                    ItemTypeID=ItemType.PIZZA,  # Assuming ItemType.PIZZA is a string
                     ItemID=pizza.PizzaID,
                     Quantity=quantity,
                     Price=pizza.Price
@@ -96,7 +95,7 @@ def order():
             if quantity > 0:
                 order_item = OrderItem(
                     OrderID=new_order.OrderID,
-                    ItemTypeID=ItemType.DRINK,  # Using string value
+                    ItemTypeID=ItemType.DRINK,  # Assuming ItemType.DRINK is a string
                     ItemID=drink.DrinkID,
                     Quantity=quantity,
                     Price=drink.Price
@@ -117,7 +116,7 @@ def order():
             if quantity > 0:
                 order_item = OrderItem(
                     OrderID=new_order.OrderID,
-                    ItemTypeID=ItemType.DESSERT,  # Using string value
+                    ItemTypeID=ItemType.DESSERT,  # Assuming ItemType.DESSERT is a string
                     ItemID=dessert.DessertID,
                     Quantity=quantity,
                     Price=dessert.Price
