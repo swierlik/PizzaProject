@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, ForeignKey, DECIMAL, String
 from sqlalchemy.orm import relationship
-from db import Base, session
+from db import Base
 from Orders.ItemType import ItemType
 from products.pizza import Pizza
 from products.drink import Drink
@@ -26,56 +26,34 @@ class OrderItem(Base):
                 f"ItemTypeID='{self.ItemTypeID}', ItemID={self.ItemID}, "
                 f"Quantity={self.Quantity}, Price={self.Price})>")
 
-def add_order_item(order_id, item_type_id, item_id, quantity):
-    # Fetch the price based on the item type and item ID
-    if item_type_id == ItemType.PIZZA:
-        item = session.query(Pizza).get(item_id)
-    elif item_type_id == ItemType.DRINK:
-        item = session.query(Drink).get(item_id)
-    elif item_type_id == ItemType.DESSERT:
-        item = session.query(Dessert).get(item_id)
-    else:
-        raise ValueError("Invalid item type.")
+    @classmethod
+    def add_order_item(cls, session, order_id, item_type_id, item_id, quantity):
+        # Fetch the price based on the item type and item ID
+        if item_type_id == ItemType.PIZZA:
+            item = session.query(Pizza).get(item_id)
+        elif item_type_id == ItemType.DRINK:
+            item = session.query(Drink).get(item_id)
+        elif item_type_id == ItemType.DESSERT:
+            item = session.query(Dessert).get(item_id)
+        else:
+            raise ValueError("Invalid item type.")
 
-    if not item:
-        raise ValueError(f"Item with ID {item_id} not found.")
+        if not item:
+            raise ValueError(f"Item with ID {item_id} not found.")
 
-    price = float(item.Price) * quantity
+        price = float(item.Price) * quantity
 
-    new_order_item = OrderItem(
-        OrderID=order_id,
-        ItemTypeID=item_type_id,
-        ItemID=item_id,
-        Quantity=quantity,
-        Price=price
-    )
-    session.add(new_order_item)
-    session.commit()
-    print(f"Order item with ID {new_order_item.OrderItemID} added successfully.")
-    return new_order_item.OrderItemID
+        new_order_item = cls(
+            OrderID=order_id,
+            ItemTypeID=item_type_id,
+            ItemID=item_id,
+            Quantity=quantity,
+            Price=price
+        )
 
-def add_order_item(order_id, item_type_id, item_id, quantity):
-    # Fetch the price based on the item type and item ID
-    if item_type_id == ItemType.PIZZA:
-        item = session.query(Pizza).get(item_id)
-    elif item_type_id == ItemType.DRINK:
-        item = session.query(Drink).get(item_id)
-    elif item_type_id == ItemType.DESSERT:
-        item = session.query(Dessert).get(item_id)
-    else:
-        raise ValueError("Invalid item type.")
+        # Add to the session
+        session.add(new_order_item)
+        # Do not commit here; let the calling code handle it
+        return new_order_item
 
-    if not item:
-        raise ValueError(f"Item with ID {item_id} not found.")
-
-    price = float(item.Price) * quantity
-
-    new_order_item = OrderItem(
-        OrderID=order_id,
-        ItemTypeID=item_type_id,
-        ItemID=item_id,
-        Quantity=quantity,
-        Price=price
-    )
-
-    return new_order_item
+# Remove the standalone add_order_item function to avoid confusion

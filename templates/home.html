@@ -1,64 +1,54 @@
 <!-- templates/home.html -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Pizzeria Menu</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <meta charset="UTF-8">
+    <title>Home - Pizza Ordering</title>
 </head>
 <body>
-    <h1>Welcome to Our Pizzeria!</h1>
-    <form action="{{ url_for('place_order') }}" method="post">
-        <div>
-            <label for="customer_name">Your Name:</label>
-            <input type="text" name="customer_name" id="customer_name" required>
-        </div>
-
-        <h2>Pizzas</h2>
-        <ul class="menu-list">
-            {% for pizza in pizzas %}
-            <li class="menu-item">
-                <div class="item-details">
-                    <h3>{{ pizza.Name }} - ${{ "%.2f"|format(pizza.Price) }}</h3>
-                    <p>{{ pizza.Description }}</p>
-                </div>
-                <div class="order-form">
-                    <label for="quantity_pizza_{{ pizza.PizzaID }}">Quantity:</label>
-                    <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" id="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0">
-                </div>
-            </li>
-            {% endfor %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li style="color: green;">{{ message }}</li>
+          {% endfor %}
         </ul>
+      {% endif %}
+    {% endwith %}
+    {% if 'customer_id' in session %}
+        <p>Welcome, {{ session['customer_name'] }}! <a href="{{ url_for('logout') }}">Logout</a></p>
+    {% else %}
+        <a href="{{ url_for('login') }}">Login</a> |
+        <a href="{{ url_for('register') }}">Register</a>
+    {% endif %}
+
+    <h1>Menu</h1>
+    <form action="{{ url_for('place_order') }}" method="post">
+        <h2>Pizzas</h2>
+        {% for pizza in pizzas %}
+            <div>
+                <strong>{{ pizza.Name }}</strong> - ${{ pizza.Price }}<br>
+                {{ pizza.Description }}<br>
+                Quantity: <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0"><br><br>
+            </div>
+        {% endfor %}
 
         <h2>Drinks</h2>
-        <ul class="menu-list">
-            {% for drink in drinks %}
-            <li class="menu-item">
-                <div class="item-details">
-                    <h3>{{ drink.Name }} - ${{ "%.2f"|format(drink.Price) }}</h3>
-                </div>
-                <div class="order-form">
-                    <label for="quantity_drink_{{ drink.DrinkID }}">Quantity:</label>
-                    <input type="number" name="quantity_drink_{{ drink.DrinkID }}" id="quantity_drink_{{ drink.DrinkID }}" min="0" value="0">
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
+        {% for drink in drinks %}
+            <div>
+                <strong>{{ drink.Name }}</strong> - ${{ drink.Price }}<br>
+                Quantity: <input type="number" name="quantity_drink_{{ drink.DrinkID }}" min="0" value="0"><br><br>
+            </div>
+        {% endfor %}
 
         <h2>Desserts</h2>
-        <ul class="menu-list">
-            {% for dessert in desserts %}
-            <li class="menu-item">
-                <div class="item-details">
-                    <h3>{{ dessert.Name }} - ${{ "%.2f"|format(dessert.Price) }}</h3>
-                </div>
-                <div class="order-form">
-                    <label for="quantity_dessert_{{ dessert.DessertID }}">Quantity:</label>
-                    <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" id="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0">
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
+        {% for dessert in desserts %}
+            <div>
+                <strong>{{ dessert.Name }}</strong> - ${{ dessert.Price }}<br>
+                Quantity: <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0"><br><br>
+            </div>
+        {% endfor %}
 
         <button type="submit">Place Order</button>
     </form>

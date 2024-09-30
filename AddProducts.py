@@ -1,17 +1,18 @@
 # AddProducts.py
 
-from db import create_all_tables, session  # Import session from db
-
+from db import create_all_tables, SessionLocal  # Import SessionLocal instead of session
 from products.pizza import add_pizza
 from products.drink import add_drink
 from products.dessert import add_dessert
 from products.ingredient import add_ingredient
-from Customer.customer import add_customer
 from Customer.discountCode import add_discount_code
-
+from Customer.customer import Customer  # Import the Customer class
 
 # Create all tables in the database
 create_all_tables()
+
+# Create a new session
+session = SessionLocal()
 
 # Add drinks
 add_drink("Coke", 1.99)
@@ -61,10 +62,27 @@ add_pizza("Cheese Feast", "Tomato, cheese, vegan cheese", [1, 2, 3, 20])
 add_pizza("Dessert", "Nutella, banana, strawberry", [1, 21, 22, 23])
 add_pizza("Fruity", "Tomato, cheese, pineapple, banana, strawberry", [1, 2, 3, 7, 21, 22])
 
-# Add a customer
-add_customer("Alice", "Female", "1990-01-01", "1234567890", "SW1A 1AA", "alice", "password", "customer", "2021-01-01 00:00:00")
-
 # Add discount codes
 add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 0.9)
 add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 0.8)
 add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 0.5)
+
+# --- Add a test customer ---
+
+from Customer.customer import Customer
+
+try:
+    # Use the class method to add a new customer
+    test_customer = Customer.add_customer(
+        session,
+        name='Test User',
+        username='testuser',
+        password='password123'
+    )
+    session.commit()
+    print("Test customer added successfully.")
+except Exception as e:
+    session.rollback()
+    print(f"Error adding test customer: {e}")
+finally:
+    session.close()
