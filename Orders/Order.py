@@ -1,5 +1,11 @@
+from datetime import timedelta
 from sqlalchemy import Column, Integer, String, Boolean, DECIMAL, ForeignKey, TIMESTAMP
 from sqlalchemy.orm import relationship
+from Orders.orderItem import create_order_item
+from products import pizza, drink, dessert
+from Customer.discountCode import get_discount_by_code
+from Customer.customer import get_PizzasOrderedCount, add_PizzasOrderedCount, get_postal_code
+from Delivery.deliveryPerson import find_available_delivery_person
 from db import Base, session
 
 # Define the Order class
@@ -25,14 +31,47 @@ class Order(Base):
                 f"OrderDate={self.OrderDate}, OrderStatus='{self.OrderStatus}', "
                 f"TotalPrice={self.TotalPrice}, DiscountApplied={self.DiscountApplied})>")
 
-# Example function to add an order
-def add_order(customer_id, order_date, order_status, estimated_delivery_time, total_price, discount_applied, delivery_person_id=None):
+def count_orders_live():
+    return session.query(Order).filter(Order.OrderStatus != "Completed").count()
+
+# Make na order given the customer ID, order date, and a list of items 
+def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode):
+    #Calculate estimated delivery time
+    estimated_delivery_time = order_date + timedelta(minutes=count_orders_live*10+30)
+
+        
+    order_total = 0
+    for Pizza in pizzas:
+        add_PizzasOrderedCount(customer_id, 1)
+        if get_PizzasOrderedCount(customer_id) %10:
+            order_total += pizza.get_price(Pizza) * 0.9
+        else:
+            order_total += pizza.get_price(Pizza)
+        session.add(create_order_item(new_order.OrderID, 'PIZZA', Pizza, pizza.get_price(Pizza)))
+        
+    for Drink in drinks:
+        order_total += drink.get_price(Drink)
+        session.add(create_order_item(new_order.OrderID, 'DRINK', Drink, drink.get_price(Drink)))
+    for Dessert in desserts:
+        order_total += dessert.get_price(Dessert)
+        session.add(create_order_item(new_order.OrderID, 'DESSERT', Dessert, dessert.get_price(Dessert)))
+
+    discount_applied = False
+    if discountCode:
+        order_total = get_discount_by_code(discountCode, order_total)
+
+    delivery_person_id= find_available_delivery_person(get_postal_code(customer_id))
+    if delivery_person_id is None:
+        print("No available delivery person found.")
+        return
+    
+
     new_order = Order(
         CustomerID=customer_id,
         OrderDate=order_date,
-        OrderStatus=order_status,
+        OrderStatus="Pending",
         EstimatedDeliveryTime=estimated_delivery_time,
-        TotalPrice=total_price,
+        TotalPrice=order_total,
         DiscountApplied=discount_applied,
         DeliveryPersonID=delivery_person_id
     )

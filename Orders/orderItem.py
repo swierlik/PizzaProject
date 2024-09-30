@@ -19,7 +19,7 @@ class OrderItem(Base):
     # Relationship to Order
     order = relationship('Order', back_populates='order_items')
 
-def add_order_item(order_id, item_type_id, item_id, quantity):
+def create_order_item(order_id, item_type_id, item_id, quantity):
     # Fetch the price based on the item type and item ID
     if item_type_id == ItemType.PIZZA:
         item = session.query(Pizza).get(item_id)
@@ -42,7 +42,5 @@ def add_order_item(order_id, item_type_id, item_id, quantity):
         Quantity=quantity,
         Price=price
     )
-    session.add(new_order_item)
-    session.commit()
-    print(f"Order item with ID {new_order_item.OrderItemID} added successfully.")
-    return new_order_item.OrderItemID
+
+    return new_order_item

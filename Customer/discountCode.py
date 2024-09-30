@@ -49,3 +49,4 @@ def get_discount_by_code(code, price):
     if use_code(code):
         discount_code = session.query(DiscountCode).filter(DiscountCode.Code == code).first()
         return price*discount_code.DiscountPercentage
+    return price
