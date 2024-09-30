@@ -61,7 +61,7 @@ add_pizza("Dessert", "Nutella, banana, strawberry", [1, 21, 22, 23])
 add_pizza("Fruity", "Tomato, cheese, pineapple, banana, strawberry", [1, 2, 3, 7, 21, 22])
 
 # Add a customer
-add_customer("Alice", "Female", "1990-01-01", "1234567890", "123 Fake Street", "alice", "password", "customer", "2021-01-01 00:00:00")
+add_customer("Alice", "Female", "1990-01-01", "1234567890", "SW1A 1AA", "alice", "password", "customer", "2021-01-01 00:00:00")
 
 # Add discount codes
 add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 0.9)

@@ -73,3 +73,17 @@ def hash_password(password):
     # Use hashlib with SHA-256 to hash the password
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password
+
+def get_PizzasOrderedCount(customerID):
+    customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
+    return customer.PizzasOrderedCount
+
+def add_PizzasOrderedCount(customerID, amount):
+    customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
+    customer.PizzasOrderedCount += amount
+    session.commit()
+    print(f"PizzasOrderedCount for CustomerID '{customerID}' updated to '{customer.PizzasOrderedCount}'.")
+
+def get_postal_code(customerID):
+    customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
+    return customer.Address

@@ -42,12 +42,13 @@ def add_pizza(name, description, ingredients):
         session.add(new_pizza)
         session.commit()
 
+
         # Step 2: Get the PizzaID of the newly created pizza
         pizza_id = new_pizza.PizzaID
 
         # Step 3: Add each ingredient from the ingredients list to the PizzaIngredient table
         for ingredient_id in ingredients:
-            add_pizza_ingredient(pizza_id, ingredient_id)
+            session.add(add_pizza_ingredient(pizza_id, ingredient_id))
 
         session.commit()
         print(f"Pizza '{name}' added to the database with ingredients.")
@@ -55,3 +56,7 @@ def add_pizza(name, description, ingredients):
     except SQLAlchemyError as e:
         session.rollback()
         print(f"Error occurred: {e}")
+
+def get_price(pizzaID):
+    pizza = session.query(Pizza).filter(Pizza.PizzaID == pizzaID).first()
+    return pizza.Price

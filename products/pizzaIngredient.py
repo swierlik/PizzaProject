@@ -16,7 +16,6 @@ def add_pizza_ingredient(pizza_id, ingredient_id):
         PizzaID=pizza_id,
         IngredientID=ingredient_id
     )
-    session.add(new_pizza_ingredient)
-    session.commit()
-    print(f"PizzaIngredient for PizzaID '{pizza_id}' and IngredientID '{ingredient_id}' added to the database.")
+
+    return new_pizza_ingredient
 

@@ -19,3 +19,7 @@ def add_dessert(name, price):
     session.add(new_dessert)
     session.commit()
     print(f"Dessert '{name}' added to the database.")
+
+def get_price(dessertID):
+    dessert = session.query(Dessert).filter(Dessert.DessertID == dessertID).first()
+    return dessert.Price

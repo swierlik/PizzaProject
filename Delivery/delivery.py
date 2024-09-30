@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP
 from db import Base, session
+from Delivery.deliveryPerson import set_availability
 
 class Delivery(Base):
     __tablename__ = 'Delivery'
@@ -24,5 +25,31 @@ def add_delivery(order_id, delivery_person_id, delivery_status, delivery_time):
         DeliveryTime=delivery_time
     )
     session.add(new_delivery)
+
+    # Update delivery person availability
+    set_availability(delivery_person_id, False)
+
     session.commit()
     print(f"Delivery for OrderID '{order_id}' added to the database.")
+
+def update_delivery_status(deliveryID, status):
+    delivery = session.query(Delivery).filter(Delivery.DeliveryID == deliveryID).first()
+    delivery.DeliveryStatus = status
+    session.commit()
+    print(f"Delivery Status for DeliveryID '{deliveryID}' updated to '{status}'.")
+
+def get_delivery_person_id(deliveryID):
+    delivery = session.query(Delivery).filter(Delivery.DeliveryID == deliveryID).first()
+    return delivery.DeliveryPersonID
+
+def get_delivery_status(deliveryID):
+    delivery = session.query(Delivery).filter(Delivery.DeliveryID == deliveryID).first()
+    return delivery.DeliveryStatus
+
+def get_delivery_time(deliveryID):
+    delivery = session.query(Delivery).filter(Delivery.DeliveryID == deliveryID).first()
+    return delivery.DeliveryTime
+
+def update_status(delivertyID):
+    delivery = session.query(Delivery).filter(Delivery.DeliveryID == delivertyID).first()
+    
