@@ -9,6 +9,7 @@ from products.ingredient import add_ingredient
 from Customer.customer import add_customer
 from Customer.discountCode import add_discount_code
 
+
 # Create all tables in the database
 create_all_tables()
 
