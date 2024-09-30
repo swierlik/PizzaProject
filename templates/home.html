@@ -1,56 +1,84 @@
-<!-- templates/home.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Home - Pizza Ordering</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li style="color: green;">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    {% if 'customer_id' in session %}
-        <p>Welcome, {{ session['customer_name'] }}! <a href="{{ url_for('logout') }}">Logout</a></p>
-    {% else %}
-        <a href="{{ url_for('login') }}">Login</a> |
-        <a href="{{ url_for('register') }}">Register</a>
-    {% endif %}
 
-    <h1>Menu</h1>
-    <form action="{{ url_for('place_order') }}" method="post">
-        <h2>Pizzas</h2>
-        {% for pizza in pizzas %}
-            <div>
-                <strong>{{ pizza.Name }}</strong> - ${{ pizza.Price }}<br>
-                {{ pizza.Description }}<br>
-                Quantity: <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0"><br><br>
+    <header>
+        <h1>Pizza Ordering System</h1>
+    </header>
+
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        {% if 'customer_id' in session %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <span>Welcome, {{ session['customer_name'] }}!</span>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert success">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
             </div>
-        {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-        <h2>Drinks</h2>
-        {% for drink in drinks %}
-            <div>
-                <strong>{{ drink.Name }}</strong> - ${{ drink.Price }}<br>
-                Quantity: <input type="number" name="quantity_drink_{{ drink.DrinkID }}" min="0" value="0"><br><br>
+        <h2>Menu</h2>
+
+        <form action="{{ url_for('place_order') }}" method="post">
+            <div class="product-section">
+                <h3>Pizzas</h3>
+                {% for pizza in pizzas %}
+                    <div class="product-item">
+                        <h3>{{ pizza.Name }}</h3>
+                        <p>{{ pizza.Description }}</p>
+                        <p><strong>Price:</strong> ${{ pizza.Price }}</p>
+                        <label for="quantity_pizza_{{ pizza.PizzaID }}">Quantity:</label>
+                        <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" id="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0">
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
 
-        <h2>Desserts</h2>
-        {% for dessert in desserts %}
-            <div>
-                <strong>{{ dessert.Name }}</strong> - ${{ dessert.Price }}<br>
-                Quantity: <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0"><br><br>
+            <div class="product-section">
+                <h3>Drinks</h3>
+                {% for drink in drinks %}
+                    <div class="product-item">
+                        <h3>{{ drink.Name }}</h3>
+                        <p><strong>Price:</strong> ${{ drink.Price }}</p>
+                        <label for="quantity_drink_{{ drink.DrinkID }}">Quantity:</label>
+                        <input type="number" name="quantity_drink_{{ drink.DrinkID }}" id="quantity_drink_{{ drink.DrinkID }}" min="0" value="0">
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
 
-        <button type="submit">Place Order</button>
-    </form>
+            <div class="product-section">
+                <h3>Desserts</h3>
+                {% for dessert in desserts %}
+                    <div class="product-item">
+                        <h3>{{ dessert.Name }}</h3>
+                        <p><strong>Price:</strong> ${{ dessert.Price }}</p>
+                        <label for="quantity_dessert_{{ dessert.DessertID }}">Quantity:</label>
+                        <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" id="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0">
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit">Place Order</button>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 Pizza Ordering System</p>
+    </footer>
 </body>
 </html>

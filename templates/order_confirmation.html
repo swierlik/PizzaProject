@@ -1,21 +1,43 @@
 <!-- templates/order_confirmation.html -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Order Confirmation</title>
+    <meta charset="UTF-8">
+    <title>Order Confirmation - Pizza Ordering</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Thank You for Your Order, {{ customer_name }}!</h1>
-    <h2>Your Order Details:</h2>
-    <ul>
-        {% for item, quantity in ordered_items %}
-            <li>{{ item.Name }} x {{ quantity }} - ${{ "%.2f"|format(item.Price * quantity) }}</li>
-        {% endfor %}
-    </ul>
-    <p>Total Cost: ${{ "%.2f"|format(total_cost) }}</p>
-    <p>Estimated Delivery Time: {{ estimated_time }} minutes</p>
-    <a href="{{ url_for('home') }}">Back to Menu</a>
+
+    <header>
+        <h1>Pizza Ordering System</h1>
+    </header>
+
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h2>Thank You for Your Order, {{ customer_name }}!</h2>
+        <h3>Your Order Details:</h3>
+        <div class="order-details">
+            <ul>
+                {% for item, quantity in ordered_items %}
+                    <li>
+                        <strong>{{ item.Name }} x {{ quantity }}</strong>
+                        <span>${{ "%.2f"|format(item.Price * quantity) }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <p><strong>Total Cost:</strong> ${{ "%.2f"|format(total_cost) }}</p>
+        <p><strong>Estimated Delivery Time:</strong> {{ estimated_time }} minutes</p>
+        <a href="{{ url_for('home') }}" class="button">Back to Menu</a>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 Pizza Ordering System</p>
+    </footer>
 </body>
 </html>

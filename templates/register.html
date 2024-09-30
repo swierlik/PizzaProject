@@ -4,33 +4,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Register - Pizza Ordering</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Register</h1>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li style="color: red;">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <form action="{{ url_for('register') }}" method="post">
-        <label>Username:</label>
-        <input type="text" name="username" required><br>
 
-        <label>Password:</label>
-        <input type="password" name="password" required><br>
+    <header>
+        <h1>Pizza Ordering System</h1>
+    </header>
 
-        <label>Name:</label>
-        <input type="text" name="name" required><br>
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('login') }}">Login</a>
+    </nav>
 
-        <!-- Add other fields as needed -->
+    <div class="container">
+        <h2>Register</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('register') }}" method="post">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" required>
 
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required>
+
+            <!-- Add other fields as needed -->
+
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 Pizza Ordering System</p>
+    </footer>
 </body>
 </html>
