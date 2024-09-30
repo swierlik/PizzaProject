@@ -1,6 +1,8 @@
 # main.py
+from Delivery.deliveryPerson import add_delivery_person
+from Orders.order import place_order
 from db import create_all_tables  # This should work if `db.py` is in the same directory as `AddProducts.py`
-
+from datetime import datetime
 from products.pizza import add_pizza
 from products.drink import add_drink
 from products.dessert import add_dessert
@@ -62,11 +64,19 @@ add_pizza("Dessert", "Nutella, banana, strawberry", [1, 21, 22, 23])
 add_pizza("Fruity", "Tomato, cheese, pineapple, banana, strawberry", [1, 2, 3, 7, 21, 22])
 
 # Add a customer
-add_customer("Alice", "Female", "1990-01-01", "1234567890", "123 Fake Street", "alice", "password", "customer", "2021-01-01 00:00:00")
+add_customer("Alice", "Female", "1990-01-01", "1234567890", "SW1A 1AA", "alice", "password", "customer", "2021-01-01 00:00:00")
 
 #Add discount codes
 add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 0.9)
 add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 0.8)
 add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 0.5)
+
+# Add a delivery person
+add_delivery_person("Bob", "SW1A 1AA")
+add_delivery_person("Charlie", "SW1A 1AB")
+
+#Place a test order
+place_order(1, datetime.now(), {1:2, 2:1, 4:1}, {1:3}, {2 : 3}, "DISCOUNT10")
+
 
 

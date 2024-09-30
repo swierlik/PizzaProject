@@ -34,27 +34,27 @@ class Order(Base):
 def count_orders_live():
     return session.query(Order).filter(Order.OrderStatus != "Completed").count()
 
-# Make na order given the customer ID, order date, and a list of items 
+# Make na order given the customer ID, order date, and a dictionary of items followed by quantities
 def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode):
     #Calculate estimated delivery time
     estimated_delivery_time = order_date + timedelta(minutes=count_orders_live*10+30)
 
         
     order_total = 0
-    for Pizza in pizzas:
+    for Pizza in pizzas.keys():
         add_PizzasOrderedCount(customer_id, 1)
         if get_PizzasOrderedCount(customer_id) %10:
             order_total += pizza.get_price(Pizza) * 0.9
         else:
             order_total += pizza.get_price(Pizza)
-        session.add(create_order_item(new_order.OrderID, 'PIZZA', Pizza, pizza.get_price(Pizza)))
+        session.add(create_order_item(new_order.OrderID, 'PIZZA', Pizza, pizzas[Pizza]))
         
-    for Drink in drinks:
+    for Drink in drinks.keys():
         order_total += drink.get_price(Drink)
-        session.add(create_order_item(new_order.OrderID, 'DRINK', Drink, drink.get_price(Drink)))
-    for Dessert in desserts:
+        session.add(create_order_item(new_order.OrderID, 'DRINK', Drink, drinks[Drink]))
+    for Dessert in desserts.keys():
         order_total += dessert.get_price(Dessert)
-        session.add(create_order_item(new_order.OrderID, 'DESSERT', Dessert, dessert.get_price(Dessert)))
+        session.add(create_order_item(new_order.OrderID, 'DESSERT', Dessert, desserts[Dessert]))
 
     discount_applied = False
     if discountCode:
