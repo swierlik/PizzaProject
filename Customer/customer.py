@@ -1,27 +1,35 @@
+# Customer/customer.py
+
+
+from sqlalchemy import Column, Integer, String, Date, TIMESTAMP, Boolean, func
+from sqlalchemy.orm import relationship
+from db import Base
 import hashlib
-from sqlalchemy import Column, Integer, String, Date, TIMESTAMP
-from db import Base, session
 
 class Customer(Base):
-    __tablename__ = 'Customer'
+    __tablename__ = 'customers'
 
-    CustomerID = Column(Integer, primary_key=True)
+    CustomerID = Column(Integer, primary_key=True, autoincrement=True)
     Name = Column(String(255), nullable=False)
-    Gender = Column(String(255), nullable=True)
-    Birthdate = Column(Date, nullable=True)
-    PhoneNumber = Column(String(255), nullable=True)
-    Address = Column(String(255), nullable=True)
-    Username = Column(String(255), nullable=False, unique=True)
-    Password = Column(String(255), nullable=False)
+    Gender = Column(String(255))
+    Birthdate = Column(Date)
+    PhoneNumber = Column(String(255))
+    Address = Column(String(255))
+    Username = Column(String(255))
+    Password = Column(String(255))
     PizzasOrderedCount = Column(Integer, default=0)
-    role = Column(String(255), nullable=False, default="customer")
-    created_at = Column(TIMESTAMP, nullable=False, )
+    role = Column(String(255), default='customer')
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    # Relationships
+    orders = relationship('Order', back_populates='customer')
 
     def __repr__(self):
-        return (f"<Customer(CustomerID={self.CustomerID}, Name='{self.Name}', Gender='{self.Gender}', "
-                f"Birthdate={self.Birthdate}, PhoneNumber='{self.PhoneNumber}', Address='{self.Address}', "
-                f"Username='{self.Username}', PizzasOrderedCount={self.PizzasOrderedCount}, role='{self.role}', "
-                f"created_at={self.created_at})>")
+        return f"<Customer(CustomerID={self.CustomerID}, Name='{self.Name}')>"
+
+    @staticmethod
+    def hash_password(password):
+        return hashlib.sha256(password.encode()).hexdigest()
 
 # Function to add a customer
 def add_customer(name, gender, birthdate, phone_number, address, username, password, role, created_at):

@@ -1,5 +1,6 @@
-# main.py
-from db import create_all_tables  # This should work if `db.py` is in the same directory as `AddProducts.py`
+# AddProducts.py
+
+from db import create_all_tables, session  # Import session from db
 
 from products.pizza import add_pizza
 from products.drink import add_drink
@@ -7,8 +8,6 @@ from products.dessert import add_dessert
 from products.ingredient import add_ingredient
 from Customer.customer import add_customer
 from Customer.discountCode import add_discount_code
-from db import create_all_tables
-
 
 # Create all tables in the database
 create_all_tables()
@@ -17,7 +16,7 @@ create_all_tables()
 add_drink("Coke", 1.99)
 add_drink("Sprite", 1.99)
 
-# Add dessertsS
+# Add desserts
 add_dessert("Chocolate Cake", 5.00)
 add_dessert("Ice Cream", 3.50)
 add_dessert("Cheesecake", 4.50)
@@ -49,7 +48,7 @@ add_ingredient("Banana", 0.75, is_vegetarian=True, is_vegan=True)
 add_ingredient("Strawberry", 0.75, is_vegetarian=True, is_vegan=True)
 add_ingredient("Nutella", 0.75, is_vegetarian=True, is_vegan=False)
 
-## Add pizzas
+# Add pizzas
 add_pizza("Margherita", "Tomato, cheese, basil", [1, 2, 3, 8, 11])
 add_pizza("Pepperoni", "Tomato, cheese, pepperoni", [1, 2, 3, 4, 8, 11])
 add_pizza("Vegetarian", "Tomato, cheese, mushrooms, olives, pineapple, tomato, onion, garlic, basil, oregano", [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
@@ -64,9 +63,7 @@ add_pizza("Fruity", "Tomato, cheese, pineapple, banana, strawberry", [1, 2, 3, 7
 # Add a customer
 add_customer("Alice", "Female", "1990-01-01", "1234567890", "123 Fake Street", "alice", "password", "customer", "2021-01-01 00:00:00")
 
-#Add discount codes
+# Add discount codes
 add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 0.9)
 add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 0.8)
 add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 0.5)
-
-

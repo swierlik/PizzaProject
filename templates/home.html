@@ -1,3 +1,5 @@
+<!-- templates/home.html -->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,7 +13,7 @@
             <label for="customer_name">Your Name:</label>
             <input type="text" name="customer_name" id="customer_name" required>
         </div>
-        
+
         <h2>Pizzas</h2>
         <ul class="menu-list">
             {% for pizza in pizzas %}
@@ -22,44 +24,42 @@
                 </div>
                 <div class="order-form">
                     <label for="quantity_pizza_{{ pizza.PizzaID }}">Quantity:</label>
-                    <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" id="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0" required>
+                    <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" id="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0">
                 </div>
             </li>
             {% endfor %}
         </ul>
-        
+
         <h2>Drinks</h2>
         <ul class="menu-list">
             {% for drink in drinks %}
             <li class="menu-item">
                 <div class="item-details">
                     <h3>{{ drink.Name }} - ${{ "%.2f"|format(drink.Price) }}</h3>
-                    <p>{{ drink.Description }}</p>
                 </div>
                 <div class="order-form">
                     <label for="quantity_drink_{{ drink.DrinkID }}">Quantity:</label>
-                    <input type="number" name="quantity_drink_{{ drink.DrinkID }}" id="quantity_drink_{{ drink.DrinkID }}" min="0" value="0" required>
+                    <input type="number" name="quantity_drink_{{ drink.DrinkID }}" id="quantity_drink_{{ drink.DrinkID }}" min="0" value="0">
                 </div>
             </li>
             {% endfor %}
         </ul>
-        
+
         <h2>Desserts</h2>
         <ul class="menu-list">
             {% for dessert in desserts %}
             <li class="menu-item">
                 <div class="item-details">
                     <h3>{{ dessert.Name }} - ${{ "%.2f"|format(dessert.Price) }}</h3>
-                    <p>{{ dessert.Description }}</p>
                 </div>
                 <div class="order-form">
                     <label for="quantity_dessert_{{ dessert.DessertID }}">Quantity:</label>
-                    <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" id="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0" required>
+                    <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" id="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0">
                 </div>
             </li>
             {% endfor %}
         </ul>
-        
+
         <button type="submit">Place Order</button>
     </form>
 </body>

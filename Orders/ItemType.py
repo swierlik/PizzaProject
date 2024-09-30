@@ -1,9 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DECIMAL, String
-from sqlalchemy.orm import relationship
-from db import Base, session
-
-# Define the ItemType Enum
-
+# Orders/ItemType.py
 
 class ItemType:
     PIZZA = 'PIZZA'
