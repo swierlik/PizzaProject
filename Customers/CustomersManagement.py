@@ -52,7 +52,7 @@ def add_customer_discount(customer_id, discount_code_id):
     print(f"CustomerDiscount for CustomerID '{customer_id}' and DiscountCodeID '{discount_code_id}' added to the database.")
 
 # Function to add a customer
-def add_customer(username, password, name=None, gender=None, birthdate=None, phone_number=None, address=None, created_at=None):
+def add_customer(name, username, password, gender=None, birthdate=None, phone_number=None, address=None, created_at=None):
     new_customer = Customer(
         Name=name,
         Gender=gender,

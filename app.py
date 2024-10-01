@@ -19,14 +19,16 @@ from db import Base, engine, create_all_tables
 db_session = scoped_session(sessionmaker(bind=engine))
 
 # Import Models
-from Orders.Order import Order
-from Orders.OrderItem import OrderItem
+from models.Order import Order
+from models.OrderItem import OrderItem
 from Orders.ItemType import ItemType
-from products.pizza import Pizza
-from products.drink import Drink
-from products.dessert import Dessert
-from Customers.customer import Customer
-from Customers.DiscountCode import DiscountCode
+from models.Pizza import Pizza
+from models.Drink import Drink
+from models.Dessert import Dessert
+from models.Customer import Customer
+from models.DiscountCode import DiscountCode
+from Customers.CustomersManagement import attempt_login, add_customer
+from Orders.OrdersManagement import place_order
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -77,114 +79,69 @@ def apply_discount():
     else:
         return jsonify({'valid': False})
 
+
 @app.route('/place_order', methods=['POST'])
 @login_required
-def place_order():
+def place_order_route():
     try:
         customer_id = session.get('customer_id')
         customer_name = session.get('customer_name')
+        discount_code = session.get('discount_code')
 
-        customer = db_session.query(Customer).get(customer_id)
+        pizzas = {}
+        drinks = {}
+        desserts = {}
 
-        # Create a new Order
-        new_order = Order(CustomerID=customer.CustomerID, TotalPrice=0.0)
-        db_session.add(new_order)
-        db_session.commit()  # Commit to get the OrderID
-
-        ordered_items = []
-        total_cost = 0.0
-
-        # Process pizzas
+        # Collect quantities from form data
         for pizza in db_session.query(Pizza).all():
-            quantity_str = request.form.get(f'quantity_pizza_{pizza.PizzaID}', '0')
-            quantity = int(quantity_str) if quantity_str.isdigit() else 0
-
+            quantity = int(request.form.get(f'quantity_pizza_{pizza.PizzaID}', 0))
             if quantity > 0:
-                order_item = OrderItem.add_order_item(
-                    db_session,
-                    order_id=new_order.OrderID,
-                    item_type_id=ItemType.PIZZA,
-                    item_id=pizza.PizzaID,
-                    quantity=quantity
-                )
-                ordered_items.append((pizza, quantity))
-                total_cost += float(pizza.Price) * quantity
+                pizzas[pizza.PizzaID] = quantity
 
-        # Process drinks
         for drink in db_session.query(Drink).all():
-            quantity_str = request.form.get(f'quantity_drink_{drink.DrinkID}', '0')
-            quantity = int(quantity_str) if quantity_str.isdigit() else 0
-
+            quantity = int(request.form.get(f'quantity_drink_{drink.DrinkID}', 0))
             if quantity > 0:
-                order_item = OrderItem.add_order_item(
-                    db_session,
-                    order_id=new_order.OrderID,
-                    item_type_id=ItemType.DRINK,
-                    item_id=drink.DrinkID,
-                    quantity=quantity
-                )
-                ordered_items.append((drink, quantity))
-                total_cost += float(drink.Price) * quantity
+                drinks[drink.DrinkID] = quantity
 
-        # Process desserts
         for dessert in db_session.query(Dessert).all():
-            quantity_str = request.form.get(f'quantity_dessert_{dessert.DessertID}', '0')
-            quantity = int(quantity_str) if quantity_str.isdigit() else 0
-
+            quantity = int(request.form.get(f'quantity_dessert_{dessert.DessertID}', 0))
             if quantity > 0:
-                order_item = OrderItem.add_order_item(
-                    db_session,
-                    order_id=new_order.OrderID,
-                    item_type_id=ItemType.DESSERT,
-                    item_id=dessert.DessertID,
-                    quantity=quantity
-                )
-                ordered_items.append((dessert, quantity))
-                total_cost += float(dessert.Price) * quantity
+                desserts[dessert.DessertID] = quantity
 
-        if not ordered_items:
+        if not (pizzas or drinks or desserts):
             flash("You didn't order anything!")
             return redirect(url_for('home'))
 
-        # Apply discount if applicable
-        discount_amount = 0.0
-        discount_code = session.get('discount_code')
-        if discount_code:
-            # Validate the discount code again
-            discount = db_session.query(DiscountCode).filter_by(Code=discount_code).first()
-            if discount and not discount.IsRedeemed and discount.ExpiryDate >= datetime.datetime.now().date():
-                # Apply the discount
-                discount_percentage = float(discount.DiscountPercentage)
-                discount_amount = total_cost * (discount_percentage / 100)
-                # Mark the discount code as redeemed
-                discount.IsRedeemed = True
-                db_session.commit()
-                # Remove the discount code from session
-                del session['discount_code']
-            else:
-                # Discount code is invalid
-                flash('Invalid discount code.')
-                # Remove the invalid discount code from session
-                del session['discount_code']
+        # Call the place_order function from OrdersManagement
+        new_order = place_order(
+            customer_id=customer_id,
+            order_date=datetime.datetime.now(),
+            pizzas=pizzas,
+            drinks=drinks,
+            desserts=desserts,
+            discountCode=discount_code
+        )
 
-        # Update the total price in the order
-        new_order.TotalPrice = total_cost - discount_amount
-        db_session.commit()
+        # Remove the discount code from the session if it was used
+        if discount_code and 'discount_code' in session:
+            del session['discount_code']
 
-        # Estimated time (for example purposes, we set it to 30 minutes)
-        estimated_time = 30
+        # Retrieve ordered items for confirmation
+        ordered_items = db_session.query(OrderItem).filter_by(OrderID=new_order.OrderID).all()
 
-        return render_template('order_confirmation.html',
-                               ordered_items=ordered_items,
-                               customer_name=customer_name,
-                               total_cost=total_cost - discount_amount,
-                               total_cost_before_discount=total_cost,
-                               discount_amount=discount_amount,
-                               estimated_time=estimated_time)
+        # Render the order confirmation template
+        return render_template(
+            'order_confirmation.html',
+            ordered_items=ordered_items,
+            customer_name=customer_name,
+            total_cost=new_order.TotalPrice,
+            estimated_time=new_order.EstimatedDeliveryTime
+        )
     except Exception as e:
         db_session.rollback()
         app.logger.error(f"Error during order placement: {e}")
         return f"An error occurred while placing your order: {e}", 500
+
 
 @app.route('/orders')
 @login_required
@@ -231,7 +188,7 @@ def login():
         
         # Authenticate user
         customer = db_session.query(Customer).filter_by(Username=username).first()
-        if customer and customer.verify_password(password):  # Ensure this method exists in your Customer model
+        if customer and attempt_login(username, password):  
             session['customer_id'] = customer.CustomerID
             session['customer_name'] = customer.Name
             flash('Logged in successfully.')
@@ -256,8 +213,7 @@ def register():
             return redirect(url_for('register'))
         
         # Create new customer using the add_customer class method
-        new_customer = Customer.add_customer(db_session, name=name, username=username, password=password)
-        db_session.commit()
+        new_customer = add_customer(name=name, username=username, password=password)
         
         flash('Registration successful. Please log in.')
         return redirect(url_for('login'))
@@ -286,6 +242,6 @@ def list_routes():
     return "<pre>" + "\n".join(sorted(output)) + "</pre>"
 
 if __name__ == '__main__':
-    create_all_tables()  # Create tables if they don't exist
+
     threading.Timer(1, open_browser).start()
     app.run(debug=True)

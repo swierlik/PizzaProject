@@ -102,6 +102,8 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             # Commit all changes if all went well
             session.commit()
             print(f"Order with ID {new_order.OrderID} added successfully.")
+
+            return new_order
     
     except SQLAlchemyError as e:
         print(f"An error occurred: {e}")
