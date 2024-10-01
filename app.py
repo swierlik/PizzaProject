@@ -25,8 +25,8 @@ from Orders.ItemType import ItemType
 from products.pizza import Pizza
 from products.drink import Drink
 from products.dessert import Dessert
-from Customer.customer import Customer
-from Customer.DiscountCode import DiscountCode
+from Customers.customer import Customer
+from Customers.DiscountCode import DiscountCode
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key

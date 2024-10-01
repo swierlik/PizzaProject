@@ -8,7 +8,6 @@ CREATE TABLE `Customer` (
   `Username` varchar(255),
   `Password` varchar(255),
   `PizzasOrderedCount` integer,
-  `role` varchar(255),
   `created_at` timestamp
 );
 

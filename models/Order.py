@@ -1,11 +1,9 @@
-# Orders/Order.py
-
 from sqlalchemy import Column, Integer, String, Boolean, DECIMAL, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
-from db import Base
+from database import Base
 
 class Order(Base):
-    __tablename__ = 'orders'  # Renamed from 'Order' to 'orders' to avoid SQL reserved keyword
+    __tablename__ = 'orders'  # Using 'orders' to avoid SQL reserved keyword conflict
 
     OrderID = Column(Integer, primary_key=True, autoincrement=True)
     CustomerID = Column(Integer, ForeignKey('customers.CustomerID'), nullable=False)
@@ -14,6 +12,8 @@ class Order(Base):
     EstimatedDeliveryTime = Column(DateTime, nullable=True)
     TotalPrice = Column(DECIMAL(10, 2), nullable=False)
     DiscountApplied = Column(Boolean, default=False)
+    
+    # Fixing the foreign key to match the correct table name 'delivery_persons'
     DeliveryPersonID = Column(Integer, ForeignKey('delivery_persons.DeliveryPersonID'), nullable=True)
 
     # Relationships

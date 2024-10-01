@@ -1,20 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP
-from db import Base, session
-from Delivery.deliveryPerson import set_availability
 
-class Delivery(Base):
-    __tablename__ = 'Delivery'
-
-    DeliveryID = Column(Integer, primary_key=True, autoincrement=True)
-    OrderID = Column(Integer, nullable=False)
-    DeliveryPersonID = Column(Integer, ForeignKey('DeliveryPerson.DeliveryPersonID'), nullable=False)
-    DeliveryStatus = Column(String(255), nullable=False)
-    DeliveryTime = Column(TIMESTAMP, nullable=False)
-
-    def __repr__(self):
-        return (f"<Delivery(DeliveryID={self.DeliveryID}, OrderID={self.OrderID}, "
-                f"DeliveryPersonID={self.DeliveryPersonID}, DeliveryStatus='{self.DeliveryStatus}', "
-                f"DeliveryTime={self.DeliveryTime})>")
+from db import session
+from models.Delivery import Delivery
+from models.DeliveryPerson import DeliveryPerson
 
 # Function to add a delivery
 def add_delivery(order_id, delivery_person_id, delivery_status, delivery_time):
@@ -38,6 +25,11 @@ def update_delivery_status(deliveryID, status):
     session.commit()
     print(f"Delivery Status for DeliveryID '{deliveryID}' updated to '{status}'.")
 
+def set_availability(delivery_person_id, availability):
+    delivery_person = session.query(DeliveryPerson).filter(DeliveryPerson.DeliveryPersonID == delivery_person_id).first()
+    delivery_person.Available = availability
+    session.commit()
+
 def get_delivery_person_id(deliveryID):
     delivery = session.query(Delivery).filter(Delivery.DeliveryID == deliveryID).first()
     return delivery.DeliveryPersonID
@@ -52,4 +44,21 @@ def get_delivery_time(deliveryID):
 
 def update_status(delivertyID):
     delivery = session.query(Delivery).filter(Delivery.DeliveryID == delivertyID).first()
+
+def add_delivery_person(name, postal_code):
+    new_delivery_person = DeliveryPerson(
+        Name=name,
+        PostalCode=postal_code,
+        Available=True
+    )
+    session.add(new_delivery_person)
+    session.commit()
+    print(f"Delivery Person '{name}' added to the database.")
+
+def find_available_delivery_person(postal_code):
+    delivery_person = session.query(DeliveryPerson).filter(DeliveryPerson.PostalCode == postal_code, DeliveryPerson.IsAvailable == True).first()
+    if delivery_person is None:
+        print("No available delivery person found.")
+        return None
+    return delivery_person.DeliveryPersonID
     

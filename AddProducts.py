@@ -1,18 +1,12 @@
 # AddProducts.py
 
-from db import create_all_tables, SessionLocal  # Import SessionLocal instead of session
-from products.pizza import add_pizza
-from products.drink import add_drink
-from products.dessert import add_dessert
-from products.ingredient import add_ingredient
-from Customer.DiscountCode import add_discount_code
-from Customer.customer import Customer  # Import the Customer class
+from datetime import datetime
+from Customers.CustomersManagement import add_customer, add_discount_code
+from Orders.OrdersManagement import place_order
+from Products.ExtrasManagement import add_dessert, add_drink
+from Products.PizzaManagement import add_pizza
+from Products.IngredientManagement import add_ingredient
 
-# Create all tables in the database
-create_all_tables()
-
-# Create a new session
-session = SessionLocal()
 
 # Add drinks
 add_drink("Coke", 1.99)
@@ -53,10 +47,10 @@ add_ingredient("Nutella", 0.75, is_vegetarian=True, is_vegan=False)
 # Add pizzas
 add_pizza("Margherita", "Tomato, cheese, basil", [1, 2, 3, 8, 11])
 add_pizza("Pepperoni", "Tomato, cheese, pepperoni", [1, 2, 3, 4, 8, 11])
-add_pizza("Vegetarian", "Tomato, cheese, mushrooms, olives, pineapple, tomato, onion, garlic, basil, oregano", [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+add_pizza("Vegetarian", "Tomato, cheese, mushrooms, olives, pineapple, onion, garlic, basil, oregano", [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
 add_pizza("Hawaiian", "Tomato, cheese, ham, pineapple", [1, 2, 3, 17, 7])
 add_pizza("Meat Feast", "Tomato, cheese, pepperoni, ham, chicken, beef", [1, 2, 3, 4, 17, 18, 19])
-add_pizza("Vegan", "Tomato, vegan cheese, mushrooms, olives, pineapple, tomato, onion, garlic, basil, oregano", [1, 2, 20, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+add_pizza("Vegan", "Tomato, vegan cheese, mushrooms, olives, pineapple, onion, garlic, basil, oregano", [1, 2, 20, 5, 6, 7, 8, 9, 10, 11, 12, 13])
 add_pizza("Spicy", "Tomato, cheese, pepperoni, chilli flakes, pepper", [1, 2, 3, 4, 13, 14])
 add_pizza("Cheese Feast", "Tomato, cheese, vegan cheese", [1, 2, 3, 20])
 add_pizza("Dessert", "Nutella, banana, strawberry", [1, 21, 22, 23])
@@ -67,22 +61,14 @@ add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 10)
 add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 20)
 add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 50)
 
-# --- Add a test customer ---
 
-from Customer.customer import Customer
+#Add a customer
+add_customer(username = "1", password = "123", name="One")
+add_customer(username = "2", password = "123", name="Two")
+add_customer(username = "3", password = "123", name="Three")
+add_customer(username = "4", password = "123", name="Four")
 
-try:
-    # Use the class method to add a new customer
-    test_customer = Customer.add_customer(
-        session,
-        name='Test User',
-        username='testuser',
-        password='password123'
-    )
-    session.commit()
-    print("Test customer added successfully.")
-except Exception as e:
-    session.rollback()
-    print(f"Error adding test customer: {e}")
-finally:
-    session.close()
+#Add some orders
+place_order(1, datetime.now(), {1: 1, 2: 2}, {1: 1}, {1: 1}, "DISCOUNT10")
+place_order(1, datetime.now(), {3: 1, 4: 1}, {2: 2}, {2: 1}, "DISCOUNT20")
+place_order(3, datetime.now(), {5: 1, 6: 1}, {1: 1}, {3: 1}, "DISCOUNT50")
