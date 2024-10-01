@@ -15,6 +15,7 @@
 
     <nav>
         <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('orders') }}">Orders</a>
         <a href="{{ url_for('logout') }}">Logout</a>
     </nav>
 
@@ -31,7 +32,11 @@
                 {% endfor %}
             </ul>
         </div>
-        <p><strong>Total Cost:</strong> ${{ "%.2f"|format(total_cost) }}</p>
+        <p><strong>Total Cost Before Discount:</strong> ${{ "%.2f"|format(total_cost_before_discount) }}</p>
+        {% if discount_amount > 0 %}
+            <p><strong>Discount Applied:</strong> -${{ "%.2f"|format(discount_amount) }}</p>
+        {% endif %}
+        <p><strong>Total Cost After Discount:</strong> ${{ "%.2f"|format(total_cost) }}</p>
         <p><strong>Estimated Delivery Time:</strong> {{ estimated_time }} minutes</p>
         <a href="{{ url_for('home') }}" class="button">Back to Menu</a>
     </div>

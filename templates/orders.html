@@ -1,0 +1,41 @@
+<!-- templates/orders.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Orders - Pizza Ordering</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <header>
+        <h1>Pizza Ordering System</h1>
+    </header>
+
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h2>Your Orders</h2>
+        {% for detail in order_details %}
+            <div class="order">
+                <h3>Order ID: {{ detail.order.OrderID }}</h3>
+                <p><strong>Total Price:</strong> ${{ "%.2f"|format(detail.order.TotalPrice) }}</p>
+                <ul>
+                    {% for item in detail.items %}
+                        <li>{{ item.name }} x {{ item.quantity }}</li>
+                    {% endfor %}
+                </ul>
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 Pizza Ordering System</p>
+    </footer>
+</body>
+</html>

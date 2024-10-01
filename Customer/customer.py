@@ -30,6 +30,10 @@ class Customer(Base):
     def hash_password(password):
         return hashlib.sha256(password.encode()).hexdigest()
 
+    def verify_password(self, password):
+        hashed_input_password = self.hash_password(password)
+        return self.Password == hashed_input_password
+
     @classmethod
     def add_customer(cls, session, name, username, password, **kwargs):
         # Hash the password

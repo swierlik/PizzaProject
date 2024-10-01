@@ -1,3 +1,5 @@
+<!-- templates/home.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,6 +16,7 @@
     <nav>
         <a href="{{ url_for('home') }}">Home</a>
         {% if 'customer_id' in session %}
+            <a href="{{ url_for('orders') }}">Orders</a>
             <a href="{{ url_for('logout') }}">Logout</a>
             <span>Welcome, {{ session['customer_name'] }}!</span>
         {% else %}
@@ -73,6 +76,14 @@
                 {% endfor %}
             </div>
 
+            <!-- Discount Code Section -->
+            <div class="discount-section">
+                <label for="discount_code">Discount Code:</label>
+                <input type="text" id="discount_code" name="discount_code" />
+                <button type="button" id="apply_discount">Apply</button>
+                <span id="discount_message"></span>
+            </div>
+
             <button type="submit">Place Order</button>
         </form>
     </div>
@@ -80,5 +91,29 @@
     <footer class="footer">
         <p>&copy; 2023 Pizza Ordering System</p>
     </footer>
+
+    <!-- JavaScript for handling discount code application -->
+    <script>
+    document.getElementById('apply_discount').addEventListener('click', function() {
+        var discountCode = document.getElementById('discount_code').value;
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '{{ url_for("apply_discount") }}', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                var messageSpan = document.getElementById('discount_message');
+                if (response.valid) {
+                    messageSpan.textContent = 'Discount applied!';
+                } else {
+                    messageSpan.textContent = 'Invalid discount code.';
+                }
+            } else {
+                alert('An error occurred while applying the discount code.');
+            }
+        };
+        xhr.send('discount_code=' + encodeURIComponent(discountCode));
+    });
+    </script>
 </body>
 </html>

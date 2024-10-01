@@ -5,7 +5,7 @@ from products.pizza import add_pizza
 from products.drink import add_drink
 from products.dessert import add_dessert
 from products.ingredient import add_ingredient
-from Customer.discountCode import add_discount_code
+from Customer.DiscountCode import add_discount_code
 from Customer.customer import Customer  # Import the Customer class
 
 # Create all tables in the database
@@ -63,9 +63,9 @@ add_pizza("Dessert", "Nutella, banana, strawberry", [1, 21, 22, 23])
 add_pizza("Fruity", "Tomato, cheese, pineapple, banana, strawberry", [1, 2, 3, 7, 21, 22])
 
 # Add discount codes
-add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 0.9)
-add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 0.8)
-add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 0.5)
+add_discount_code("DISCOUNT10", "10% off your order", "2025-12-31", 10)
+add_discount_code("DISCOUNT20", "20% off your order", "2025-12-31", 20)
+add_discount_code("DISCOUNT50", "50% off your order", "2025-12-31", 50)
 
 # --- Add a test customer ---
 

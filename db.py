@@ -27,7 +27,7 @@ from products.drink import Drink
 from products.dessert import Dessert
 from products.ingredient import Ingredient
 
-from Customer.discountCode import DiscountCode
+from Customer.DiscountCode import DiscountCode
 
 # Function to create all tables
 def create_all_tables():
