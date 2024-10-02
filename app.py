@@ -112,8 +112,8 @@ def place_order_route():
             flash("You didn't order anything!")
             return redirect(url_for('home'))
 
-        # Call the place_order function from OrdersManagement
-        new_order = place_order(
+        # Call the place_order function
+        new_order, total_cost_before_discount, discount_amount = place_order(
             customer_id=customer_id,
             order_date=datetime.datetime.now(),
             pizzas=pizzas,
@@ -121,10 +121,6 @@ def place_order_route():
             desserts=desserts,
             discountCode=discount_code
         )
-
-        # Remove the discount code from the session if it was used
-        if discount_code and 'discount_code' in session:
-            del session['discount_code']
 
         # Retrieve ordered items for confirmation
         ordered_items = db_session.query(OrderItem).filter_by(OrderID=new_order.OrderID).all()
@@ -135,12 +131,15 @@ def place_order_route():
             ordered_items=ordered_items,
             customer_name=customer_name,
             total_cost=new_order.TotalPrice,
+            total_cost_before_discount=total_cost_before_discount,
+            discount_amount=discount_amount,
             estimated_time=new_order.EstimatedDeliveryTime
         )
     except Exception as e:
         db_session.rollback()
         app.logger.error(f"Error during order placement: {e}")
         return f"An error occurred while placing your order: {e}", 500
+
 
 
 @app.route('/orders')
@@ -205,6 +204,11 @@ def register():
         name = request.form.get('name')
         username = request.form.get('username')
         password = request.form.get('password')
+        gender = request.form.get('gender')
+        birthdate = request.form.get('dob')  # Date of Birth from date picker
+        phone_number = request.form.get('phone')
+        address = request.form.get('address')
+        postal_code = request.form.get('postal_code')
         
         # Check if username already exists
         existing_customer = db_session.query(Customer).filter_by(Username=username).first()
@@ -212,13 +216,31 @@ def register():
             flash('Username already exists. Please choose a different one.')
             return redirect(url_for('register'))
         
-        # Create new customer using the add_customer class method
-        new_customer = add_customer(name=name, username=username, password=password)
+        # Convert birthdate string to a date object
+        if birthdate:
+            birthdate = datetime.datetime.strptime(birthdate, '%Y-%m-%d').date()
+        
+        # Add a timestamp for when the customer is created
+        created_at = datetime.datetime.now()
+
+        # Create new customer using the add_customer method
+        add_customer(
+            name=name,
+            username=username,
+            password=password,
+            gender=gender,
+            birthdate=birthdate,
+            phone_number=phone_number,
+            address=address,
+            postal_code=postal_code,
+            created_at=created_at
+        )
         
         flash('Registration successful. Please log in.')
         return redirect(url_for('login'))
     
     return render_template('register.html')
+
 @app.route('/logout')
 def logout():
     # Remove user information from the session
@@ -242,6 +264,8 @@ def list_routes():
     return "<pre>" + "\n".join(sorted(output)) + "</pre>"
 
 if __name__ == '__main__':
-
-    threading.Timer(1, open_browser).start()
+    
+    if not os.environ.get('WERKZEUG_RUN_MAIN'):  # Check if the reloader process is running
+        threading.Timer(1, open_browser).start()
     app.run(debug=True)
+

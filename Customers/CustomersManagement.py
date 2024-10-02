@@ -37,8 +37,8 @@ def use_code(code):
 def get_discount_by_code(code, price):
     if use_code(code):
         discount_code = session.query(DiscountCode).filter(DiscountCode.Code == code).first()
-        return price*(1-float(discount_code.DiscountPercentage)/100)
-    return price
+        return price*(float(discount_code.DiscountPercentage)/100)
+    return 0
 
 
 # Function to add a customer discount
@@ -52,13 +52,14 @@ def add_customer_discount(customer_id, discount_code_id):
     print(f"CustomerDiscount for CustomerID '{customer_id}' and DiscountCodeID '{discount_code_id}' added to the database.")
 
 # Function to add a customer
-def add_customer(name, username, password, gender=None, birthdate=None, phone_number=None, address=None, created_at=None):
+def add_customer(name, username, password, gender=None, birthdate=None, phone_number=None, address=None, postal_code=None, created_at=None):
     new_customer = Customer(
         Name=name,
         Gender=gender,
         Birthdate=birthdate,
         PhoneNumber=phone_number,
         Address=address,
+        PostalCode=postal_code,
         Username=username,
         Password=hash_password(password),
         created_at=created_at
@@ -106,4 +107,4 @@ def add_PizzasOrderedCount(customerID, amount):
 
 def get_postal_code(customerID):
     customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
-    return customer.Address
+    return customer.PostalCode

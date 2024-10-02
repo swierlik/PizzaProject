@@ -49,7 +49,7 @@ def add_delivery_person(name, postal_code):
     new_delivery_person = DeliveryPerson(
         Name=name,
         PostalCode=postal_code,
-        Available=True
+        IsAvailable=True
     )
     session.add(new_delivery_person)
     session.commit()

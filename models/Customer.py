@@ -12,6 +12,7 @@ class Customer(Base):
     Birthdate = Column(Date, nullable=True)
     PhoneNumber = Column(String(255), nullable=True)
     Address = Column(String(255), nullable=True)
+    PostalCode = Column(String(255), nullable=True)
     Username = Column(String(255), unique=True, nullable=False)
     Password = Column(String(255), nullable=False)
     PizzasOrderedCount = Column(Integer, default=0)
