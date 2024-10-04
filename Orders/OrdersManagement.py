@@ -152,3 +152,34 @@ def assign_driver(order_id):
             print(f"Order {order.OrderID} assigned to driver {driver}.")
         else:
             print(f"No available driver found for order {order.OrderID}.")
+
+
+def can_cancel_order(order_id):
+    """
+    Check if the order can be canceled.
+    An order can be canceled if less than 5 minutes have passed since the order was placed
+    and the order is not already canceled or completed.
+    """
+    try:
+        with SessionLocal() as session:
+            order = session.query(Order).filter_by(OrderID=order_id).first()
+            if not order:
+                return False  # Order does not exist
+
+            time_since_order = datetime.now() - order.OrderDate
+            return (time_since_order <= timedelta(minutes=5)) and (order.OrderStatus not in ["Canceled", "Completed"])
+    except SQLAlchemyError as e:
+        print(f"Error checking if order can be canceled: {e}")
+        return False
+
+def get_order_by_customer(customer_id):
+    """
+    Retrieve all orders for a given customer, ordered by OrderDate descending.
+    """
+    try:
+        with SessionLocal() as session:
+            orders = session.query(Order).filter_by(CustomerID=customer_id).order_by(Order.OrderDate.desc()).all()
+            return orders
+    except SQLAlchemyError as e:
+        print(f"Error fetching orders for customer {customer_id}: {e}")
+        return []

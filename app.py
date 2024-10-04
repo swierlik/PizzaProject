@@ -30,7 +30,7 @@ from models.Dessert import Dessert
 from models.Customer import Customer
 from models.DiscountCode import DiscountCode
 from Customers.CustomersManagement import attempt_login, add_customer
-from Orders.OrdersManagement import place_order, get_order  # Ensure get_order is imported
+from Orders.OrdersManagement import place_order, get_order, can_cancel_order, get_order_by_customer  # Ensure get_order is imported
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -148,31 +148,43 @@ def orders():
         customer_id = flask_session.get('customer_id')
         customer_name = flask_session.get('customer_name')
 
-        # Step 1: Fetch all OrderIDs for the customer, sorted by OrderDate descending
-        with SessionLocal() as session_db:
-            # Retrieve list of OrderIDs as tuples like [(1,), (2,), ...]
-            order_id_tuples = session_db.query(Order.OrderID)\
-                                         .filter_by(CustomerID=customer_id)\
-                                         .order_by(Order.OrderDate.desc())\
-                                         .all()
+        # Fetch all orders for the customer using the new method
+        orders_list = get_order_by_customer(customer_id)
 
-        # Step 2: Extract OrderIDs from tuples
-        order_ids = [order_id[0] for order_id in order_id_tuples]
-
-        # Step 3: Use get_order to retrieve each order
-        orders_list = []
-        for oid in order_ids:
-            order = get_order(oid)
-            if order:
-                orders_list.append(order)
-
-        # Step 4: Pass the list of orders to the template
-        return render_template('orders.html', orders=orders_list, customer_name=customer_name)
-
+        # Pass the list of orders and the can_cancel_order function to the template
+        return render_template('orders.html', orders=orders_list, customer_name=customer_name, can_cancel_order=can_cancel_order)
+    
     except Exception as e:
         app.logger.error(f"Error fetching orders: {e}")
         return f"An error occurred while fetching your orders: {e}", 500
-        
+
+@app.route('/cancel_order/<int:order_id>', methods=['POST'])
+@login_required
+def cancel_order(order_id):
+    try:
+        customer_id = flask_session.get('customer_id')
+
+        # Fetch the order to ensure it belongs to the customer
+        with SessionLocal() as session_db:
+            order = session_db.query(Order).filter_by(OrderID=order_id, CustomerID=customer_id).first()
+            if not order:
+                flash("Order not found.")
+                return redirect(url_for('orders'))
+
+            # Check if the order can be canceled
+            if can_cancel_order(order_id):
+                order.OrderStatus = "Canceled"
+                session_db.commit()
+                flash(f"Order {order_id} has been canceled successfully.")
+            else:
+                flash(f"Order {order_id} cannot be canceled (time window expired or already processed).")
+
+        return redirect(url_for('orders'))
+    
+    except Exception as e:
+        app.logger.error(f"Error canceling order {order_id}: {e}")
+        flash("An error occurred while trying to cancel your order.")
+        return redirect(url_for('orders'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

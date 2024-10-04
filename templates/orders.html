@@ -31,9 +31,55 @@
             margin-bottom: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            /* Removed absolute positioning */
         }
         .order h3 {
             margin-top: 0;
+        }
+        .cancel-button {
+            padding: 8px 12px;
+            background-color: #ff4d4d; /* Red color for active cancel button */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px; /* Added margin to position lower */
+        }
+        .cancel-button:hover {
+            background-color: #ff1a1a;
+        }
+        .cancel-button.disabled {
+            background-color: gray; /* Gray color for disabled button */
+            cursor: not-allowed;
+        }
+        .actions {
+            /* Removed absolute positioning to allow natural flow */
+            margin-top: 10px;
+        }
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .flashes li {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
@@ -53,6 +99,16 @@
         <h2>Welcome, {{ customer_name }}!</h2>
         <h2>Your Orders</h2>
         
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        
         {% if orders %}
             {% for order in orders %}
                 <div class="order">
@@ -66,6 +122,16 @@
                     {% endif %}
                     
                     <p><strong>Estimated Delivery Time:</strong> {{ order.EstimatedDeliveryTime.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    
+                    <div class="actions">
+                        {% if can_cancel_order(order.OrderID) and order.OrderStatus == 'Pending' %}
+                            <form action="{{ url_for('cancel_order', order_id=order.OrderID) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="cancel-button">Cancel Order</button>
+                            </form>
+                        {% else %}
+                            <button type="button" class="cancel-button disabled" disabled>Cannot Cancel</button>
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         {% else %}
