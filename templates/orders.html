@@ -6,6 +6,36 @@
     <meta charset="UTF-8">
     <title>Your Orders - Pizza Ordering</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Basic styling for demonstration purposes */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+        }
+        header, nav, footer {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+        }
+        nav a {
+            color: #fff;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+        .container {
+            padding: 20px;
+        }
+        .order {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .order h3 {
+            margin-top: 0;
+        }
+    </style>
 </head>
 <body>
 
@@ -15,27 +45,36 @@
 
     <nav>
         <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('orders') }}">My Orders</a>
         <a href="{{ url_for('logout') }}">Logout</a>
     </nav>
 
     <div class="container">
+        <h2>Welcome, {{ customer_name }}!</h2>
         <h2>Your Orders</h2>
-        {% for detail in order_details %}
-            <div class="order">
-                <h3>Order ID: {{ detail.order.OrderID }}</h3>
-                <p><strong>Total Price:</strong> ${{ "%.2f"|format(detail.order.TotalPrice) }}</p>
-                <ul>
-                    {% for item in detail.items %}
-                        <li>{{ item.name }} x {{ item.quantity }}</li>
-                    {% endfor %}
-                </ul>
-                <hr>
-            </div>
-        {% endfor %}
+        
+        {% if orders %}
+            {% for order in orders %}
+                <div class="order">
+                    <h3>Order ID: {{ order.OrderID }}</h3>
+                    <p><strong>Status:</strong> {{ order.OrderStatus }}</p>
+                    <p><strong>Order Date:</strong> {{ order.OrderDate.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    <p><strong>Total Price:</strong> ${{ "%.2f"|format(order.TotalPrice) }}</p>
+                    
+                    {% if order.DiscountApplied %}
+                        <p><strong>Discount Applied:</strong> ${{ "%.2f"|format(order.TotalPrice - (order.TotalPrice / 0.9)) }}</p>
+                    {% endif %}
+                    
+                    <p><strong>Estimated Delivery Time:</strong> {{ order.EstimatedDeliveryTime.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>You have no orders yet.</p>
+        {% endif %}
     </div>
 
     <footer class="footer">
-        <p>&copy; 2023 Pizza Ordering System</p>
+        <p>&copy; 2024 Pizza Ordering System</p>
     </footer>
 </body>
 </html>
