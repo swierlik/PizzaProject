@@ -6,6 +6,82 @@
     <meta charset="UTF-8">
     <title>Your Orders - Pizza Ordering</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Basic styling for demonstration purposes */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+        }
+        header, nav, footer {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+        }
+        nav a {
+            color: #fff;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+        .container {
+            padding: 20px;
+        }
+        .order {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .order h3 {
+            margin-top: 0;
+        }
+        .cancel-button {
+            padding: 8px 12px;
+            background-color: #ff4d4d; /* Red color for active cancel button */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .cancel-button:hover {
+            background-color: #ff1a1a;
+        }
+        .cancel-button.disabled {
+            background-color: gray; /* Gray color for disabled button */
+            cursor: not-allowed;
+        }
+        .actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .flashes li {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
 
@@ -15,31 +91,56 @@
 
     <nav>
         <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('orders') }}">My Orders</a>
         <a href="{{ url_for('logout') }}">Logout</a>
     </nav>
 
     <div class="container">
+        <h2>Welcome, {{ customer_name }}!</h2>
         <h2>Your Orders</h2>
-        {% if order_details %}
-            {% for detail in order_details %}
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        
+        {% if orders %}
+            {% for order in orders %}
                 <div class="order">
-                    <h3>Order ID: {{ detail.order.OrderID }}</h3>
-                    <p><strong>Total Price:</strong> ${{ "%.2f"|format(detail.order.TotalPrice) }}</p>
-                    <ul>
-                        {% for item in detail.items %}
-                            <li>{{ item.name }} x {{ item.quantity }}</li>
-                        {% endfor %}
-                    </ul>
-                    <hr>
+                    <h3>Order ID: {{ order.OrderID }}</h3>
+                    <p><strong>Status:</strong> {{ order.OrderStatus }}</p>
+                    <p><strong>Order Date:</strong> {{ order.OrderDate.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    <p><strong>Total Price:</strong> ${{ "%.2f"|format(order.TotalPrice) }}</p>
+                    
+                    {% if order.DiscountApplied %}
+                        <p><strong>Discount Applied:</strong> ${{ "%.2f"|format(order.TotalPrice - (order.TotalPrice / 0.9)) }}</p>
+                    {% endif %}
+                    
+                    <p><strong>Estimated Delivery Time:</strong> {{ order.EstimatedDeliveryTime.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    
+                    <div class="actions">
+                        {% if can_cancel_order(order.OrderID) and order.OrderStatus == 'Pending' %}
+                            <form action="{{ url_for('cancel_order', order_id=order.OrderID) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="cancel-button">Cancel Order</button>
+                            </form>
+                        {% else %}
+                            <button type="button" class="cancel-button disabled" disabled>Cannot Cancel</button>
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         {% else %}
-            <p>You have no orders.</p>
+            <p>You have no orders yet.</p>
         {% endif %}
     </div>
 
     <footer class="footer">
-        <p>&copy; 2023 Pizza Ordering System</p>
+        <p>&copy; 2024 Pizza Ordering System</p>
     </footer>
 </body>
 </html>

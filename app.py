@@ -1,8 +1,9 @@
+# app.py
+
 import sys
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from sqlalchemy import select
-from sqlalchemy.orm import scoped_session, sessionmaker, joinedload
+from flask import Flask, render_template, request, redirect, url_for, flash, session as flask_session, jsonify
+from sqlalchemy.orm import scoped_session, sessionmaker
 import threading
 import webbrowser
 from functools import wraps
@@ -14,7 +15,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # Import database session and Base
-from db import Base, engine, create_all_tables
+from db import Base, engine, SessionLocal, create_all_tables  # Ensure SessionLocal is imported
 
 # Set up scoped_session
 db_session = scoped_session(sessionmaker(bind=engine))
@@ -29,7 +30,7 @@ from models.Dessert import Dessert
 from models.Customer import Customer
 from models.DiscountCode import DiscountCode
 from Customers.CustomersManagement import attempt_login, add_customer
-from Orders.OrdersManagement import get_orders_by_customer, place_order
+from Orders.OrdersManagement import place_order, get_order, can_cancel_order, get_order_by_customer  # Ensure get_order is imported
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -41,7 +42,7 @@ def open_browser():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'customer_id' not in session:
+        if 'customer_id' not in flask_session:
             flash('Please log in to access this page.')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -73,21 +74,20 @@ def apply_discount():
         discount = db_session.query(DiscountCode).filter_by(Code=discount_code).first()
         if discount and not discount.IsRedeemed and discount.ExpiryDate >= datetime.datetime.now().date():
             # Store the discount code in the session
-            session['discount_code'] = discount_code
+            flask_session['discount_code'] = discount_code
             return jsonify({'valid': True})
         else:
             return jsonify({'valid': False})
     else:
         return jsonify({'valid': False})
 
-
 @app.route('/place_order', methods=['POST'])
 @login_required
 def place_order_route():
     try:
-        customer_id = session.get('customer_id')
-        customer_name = session.get('customer_name')
-        discount_code = session.get('discount_code')
+        customer_id = flask_session.get('customer_id')
+        customer_name = flask_session.get('customer_name')
+        discount_code = flask_session.get('discount_code')
 
         pizzas = {}
         drinks = {}
@@ -141,50 +141,69 @@ def place_order_route():
         app.logger.error(f"Error during order placement: {e}")
         return f"An error occurred while placing your order: {e}", 500
 
-
-
 @app.route('/orders')
 @login_required
 def orders():
     try:
-        customer_id = session.get('customer_id')
-        customer = db_session.query(Customer).get(customer_id)
+        customer_id = flask_session.get('customer_id')
+        customer_name = flask_session.get('customer_name')
 
-        orders = customer.orders
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(type(orders))
+        # Fetch all orders for the customer using the new method
+        orders_list = get_order_by_customer(customer_id)
 
-        order_details = []
-
-        for order in orders:
-            items = order.order_items
-
-            if items is None:
-                app.logger.warning(f"No items found for order ID {order.OrderID}")
-                continue  # Skip if there are no items
-
-            item_list = []
-            for item in items:
-                item_name = 'Unknown Item'
-                if item.ItemTypeID == ItemType.PIZZA:
-                    pizza = db_session.execute(select(Pizza).where(Pizza.PizzaID == item.ItemID)).scalars().first()
-                    item_name = pizza.Name if pizza else 'Unknown Item'
-                elif item.ItemTypeID == ItemType.DRINK:
-                    drink = db_session.execute(select(Drink).where(Drink.DrinkID == item.ItemID)).scalars().first()
-                    item_name = drink.Name if drink else 'Unknown Item'
-                elif item.ItemTypeID == ItemType.DESSERT:
-                    dessert = db_session.execute(select(Dessert).where(Dessert.DessertID == item.ItemID)).scalars().first()
-                    item_name = dessert.Name if dessert else 'Unknown Item'
-
-                item_list.append({'name': item_name, 'quantity': item.Quantity})
-
-            order_details.append({'order': order, 'items': item_list})
-
-        return render_template('orders.html', order_details=order_details)
+        # Pass the list of orders and the can_cancel_order function to the template
+        return render_template('orders.html', orders=orders_list, customer_name=customer_name, can_cancel_order=can_cancel_order)
+    
     except Exception as e:
         app.logger.error(f"Error fetching orders: {e}")
         return f"An error occurred while fetching your orders: {e}", 500
 
+@app.route('/cancel_order/<int:order_id>', methods=['POST'])
+@login_required
+def cancel_order(order_id):
+    try:
+        customer_id = flask_session.get('customer_id')
+
+        # Fetch the order to ensure it belongs to the customer
+        with SessionLocal() as session_db:
+            order = session_db.query(Order).filter_by(OrderID=order_id, CustomerID=customer_id).first()
+            if not order:
+                flash("Order not found.")
+                return redirect(url_for('orders'))
+
+            # Check if the order can be canceled
+            if can_cancel_order(order_id):
+                order.OrderStatus = "Canceled"
+                session_db.commit()
+                flash(f"Order {order_id} has been canceled successfully.")
+            else:
+                flash(f"Order {order_id} cannot be canceled (time window expired or already processed).")
+
+        return redirect(url_for('orders'))
+    
+    except Exception as e:
+        app.logger.error(f"Error canceling order {order_id}: {e}")
+        flash("An error occurred while trying to cancel your order.")
+        return redirect(url_for('orders'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Retrieve form data
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Authenticate user
+        customer = db_session.query(Customer).filter_by(Username=username).first()
+        if customer and attempt_login(username, password):  
+            flask_session['customer_id'] = customer.CustomerID
+            flask_session['customer_name'] = customer.Name
+            flash('Logged in successfully.')
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid username or password.')
+
+    return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -198,17 +217,17 @@ def register():
         phone_number = request.form.get('phone')
         address = request.form.get('address')
         postal_code = request.form.get('postal_code')
-        
+
         # Check if username already exists
         existing_customer = db_session.query(Customer).filter_by(Username=username).first()
         if existing_customer:
             flash('Username already exists. Please choose a different one.')
             return redirect(url_for('register'))
-        
+
         # Convert birthdate string to a date object
         if birthdate:
             birthdate = datetime.datetime.strptime(birthdate, '%Y-%m-%d').date()
-        
+
         # Add a timestamp for when the customer is created
         created_at = datetime.datetime.now()
 
@@ -224,17 +243,17 @@ def register():
             postal_code=postal_code,
             created_at=created_at
         )
-        
+
         flash('Registration successful. Please log in.')
         return redirect(url_for('login'))
-    
+
     return render_template('register.html')
 
 @app.route('/logout')
 def logout():
     # Remove user information from the session
-    session.pop('customer_id', None)
-    session.pop('customer_name', None)
+    flask_session.pop('customer_id', None)
+    flask_session.pop('customer_name', None)
     flash('You have been logged out.')
     return redirect(url_for('home'))
 
@@ -253,8 +272,6 @@ def list_routes():
     return "<pre>" + "\n".join(sorted(output)) + "</pre>"
 
 if __name__ == '__main__':
-    
     if not os.environ.get('WERKZEUG_RUN_MAIN'):  # Check if the reloader process is running
         threading.Timer(1, open_browser).start()
     app.run(debug=True)
-
