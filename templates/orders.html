@@ -31,7 +31,7 @@
             margin-bottom: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            /* Removed absolute positioning */
+            position: relative;
         }
         .order h3 {
             margin-top: 0;
@@ -44,7 +44,6 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            margin-top: 10px; /* Added margin to position lower */
         }
         .cancel-button:hover {
             background-color: #ff1a1a;
@@ -54,8 +53,9 @@
             cursor: not-allowed;
         }
         .actions {
-            /* Removed absolute positioning to allow natural flow */
-            margin-top: 10px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
         }
         .flashes {
             list-style-type: none;
