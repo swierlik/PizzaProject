@@ -20,18 +20,22 @@
 
     <div class="container">
         <h2>Your Orders</h2>
-        {% for detail in order_details %}
-            <div class="order">
-                <h3>Order ID: {{ detail.order.OrderID }}</h3>
-                <p><strong>Total Price:</strong> ${{ "%.2f"|format(detail.order.TotalPrice) }}</p>
-                <ul>
-                    {% for item in detail.items %}
-                        <li>{{ item.name }} x {{ item.quantity }}</li>
-                    {% endfor %}
-                </ul>
-                <hr>
-            </div>
-        {% endfor %}
+        {% if order_details %}
+            {% for detail in order_details %}
+                <div class="order">
+                    <h3>Order ID: {{ detail.order.OrderID }}</h3>
+                    <p><strong>Total Price:</strong> ${{ "%.2f"|format(detail.order.TotalPrice) }}</p>
+                    <ul>
+                        {% for item in detail.items %}
+                            <li>{{ item.name }} x {{ item.quantity }}</li>
+                        {% endfor %}
+                    </ul>
+                    <hr>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>You have no orders.</p>
+        {% endif %}
     </div>
 
     <footer class="footer">

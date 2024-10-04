@@ -10,8 +10,11 @@ from Products.IngredientManagement import add_ingredient
 
 
 # Add drinks
+add_drink("Birthday Drink", 0.00)
 add_drink("Coke", 1.99)
 add_drink("Sprite", 1.99)
+add_drink("Fanta", 1.99)
+add_drink("Water", 0.99)
 
 # Add desserts
 add_dessert("Chocolate Cake", 5.00)
@@ -46,6 +49,7 @@ add_ingredient("Strawberry", 0.75, is_vegetarian=True, is_vegan=True)
 add_ingredient("Nutella", 0.75, is_vegetarian=True, is_vegan=False)
 
 # Add pizzas
+add_pizza("Birthday Pizza", "Tomato, cheese, ham", [1, 2, 3, 17], set_price=0.00)
 add_pizza("Margherita", "Tomato, cheese, basil", [1, 2, 3, 8, 11])
 add_pizza("Pepperoni", "Tomato, cheese, pepperoni", [1, 2, 3, 4, 8, 11])
 add_pizza("Vegetarian", "Tomato, cheese, mushrooms, olives, pineapple, onion, garlic, basil, oregano", [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])

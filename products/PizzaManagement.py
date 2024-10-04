@@ -5,7 +5,7 @@ from db import session
 from sqlalchemy.exc import SQLAlchemyError
 
 
-def add_pizza(name, description, ingredients):
+def add_pizza(name, description, ingredients, set_price=999):
     try:
         price = 0.0
         all_ingredients_vegetarian = True  # Rename to avoid conflict with the function
@@ -24,7 +24,7 @@ def add_pizza(name, description, ingredients):
         new_pizza = Pizza(
             Name=name,
             Description=description,
-            Price=price,
+            Price=min(price, set_price),
             IsVegetarian=all_ingredients_vegetarian,  # Use renamed variable
             IsVegan=all_ingredients_vegan  # Use renamed variable
         )

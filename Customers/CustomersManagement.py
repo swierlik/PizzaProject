@@ -62,7 +62,7 @@ def add_customer(name, username, password, gender=None, birthdate=None, phone_nu
         PostalCode=postal_code,
         Username=username,
         Password=hash_password(password),
-        created_at=created_at
+        CreatedAt=created_at
     )
     session.add(new_customer)
     session.commit()

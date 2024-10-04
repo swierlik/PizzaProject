@@ -1,5 +1,5 @@
 # Customers/Customer.py
-from sqlalchemy import Column, Integer, String, Date, TIMESTAMP, func
+from sqlalchemy import Boolean, Column, Integer, String, Date, TIMESTAMP, func
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -16,10 +16,11 @@ class Customer(Base):
     Username = Column(String(255), unique=True, nullable=False)
     Password = Column(String(255), nullable=False)
     PizzasOrderedCount = Column(Integer, default=0)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    CreatedAt = Column(TIMESTAMP, server_default=func.now())
+    IsNext10Discount = Column(Boolean, default=False)
 
     # Relationships
-    orders = relationship('Order', back_populates='customer')  # Note: Changed 'Customer' to 'customer' to match relationship naming
+    orders = relationship('Order', back_populates='customer')
 
     def __repr__(self):
         return f"<Customer(CustomerID={self.CustomerID}, Name='{self.Name}')>"

@@ -47,45 +47,69 @@ def create_order_item(order_id, item_type_id, item_id, quantity):
 def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=None):
     order_total_before_discount = 0
     discount_applied = False
-    discount_amount = 0
+    discount_total = 0
 
     try:
         with SessionLocal() as session:
             # Calculate estimated delivery time
-            estimated_delivery_time = order_date + timedelta(minutes=count_orders_live() * 10 + 30)
-
+            estimated_delivery_time = order_date + timedelta(minutes=pizzas * 10 + 30)
+            passed10=False
             # Calculate the total price before any discounts
-            for pizzaID in pizzas.keys():
-                add_PizzasOrderedCount(customer_id, 1)
-                if get_PizzasOrderedCount(customer_id) % 10 == 0:
-                    order_total_before_discount += get_price_pizza(pizzaID) * 0.9  # Apply 10% discount
-                else:
-                    order_total_before_discount += get_price_pizza(pizzaID)
+            total_pizzas=0
+            if pizzas:
+                for pizzaID in pizzas.keys():
+                    for i in range(pizzas[pizzaID]):
+                        total_pizzas+=1
+                        add_PizzasOrderedCount(customer_id, 1)
+                        if get_PizzasOrderedCount(customer_id) % 10 == 0:
+                            passed10=True
+                    order_total_before_discount += get_price_pizza(pizzaID)*pizzas[pizzaID]
+            else:
+                exception = ValueError("No pizzas in the order.")
+                raise exception
 
             for drinkID in drinks.keys():
-                order_total_before_discount += get_price_drink(drinkID)
+                order_total_before_discount += get_price_drink(drinkID)*drinks[drinkID]
 
             for dessertID in desserts.keys():
-                order_total_before_discount += get_price_dessert(dessertID)
+                order_total_before_discount += get_price_dessert(dessertID)*desserts[dessertID]
 
             # Apply discount if a discount code is provided
             if discountCode:
                 discount_amount = get_discount_by_code(discountCode, order_total_before_discount)
                 order_total = order_total_before_discount - discount_amount
                 discount_applied = True
+                discount_total+=discount_amount
             else:
                 order_total = order_total_before_discount
+            
+            #Apply discount if customer has ordered 10 pizzas
+            if get_customer_by_id(customer_id).IsNext10Discount:
+                discount_amount = order_total*0.1
+                order_total = order_total - discount_amount
+                discount_applied = True
+                get_customer_by_id(customer_id).IsNext10Discount = False
+                discount_total+=discount_amount
+
+            #If customer's birthday then 1 free pizza and drink
+            if get_customer_by_id(customer_id).Birthdate == order_date.date():
+                pizzas[0] = 1
+                drinks[0] = 1
 
             # Create new order
             new_order = Order(
                 CustomerID=customer_id,
                 OrderDate=order_date,
-                OrderStatus="Pending",
+                OrderStatus="Preparing",
                 EstimatedDeliveryTime=estimated_delivery_time,
                 TotalPrice=order_total,
                 DiscountApplied=discount_applied,
                 DeliveryPersonID=None
             )
+            #Add 10 pizzas discount to next order
+            if passed10:
+                get_customer_by_id(customer_id).IsNext10Discount = True
+
             session.add(new_order)
             session.commit()  # Commit the order to the database
 
@@ -101,23 +125,24 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
 
             print(f"Order with ID {new_order.OrderID} added successfully.")
 
-            return new_order, order_total_before_discount, discount_amount
+            return new_order, order_total_before_discount, discount_total
 
     except SQLAlchemyError as e:
         print(f"An error occurred: {e}")
         session.rollback()  # Roll back the transaction in case of an error
-
-
 
 def get_order(order_id):
     with SessionLocal() as session:
         order = session.query(Order).get(order_id)
         return order
 
-def refresh_orders():
+def refresh_orders_status():
     with SessionLocal() as session:
         orders = session.query(Order).all()
         for order in orders:
+            if order.OrderStatus == "Preparing" and (order.OrderDate + timedelta(minutes=3)) < datetime.now():
+                order.OrderStatus = "ReadyForDelivery"
+                session.commit()
             if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
                 order.OrderStatus = "Completed"
                 order.delivery_person.IsAvailable = True
@@ -152,3 +177,8 @@ def assign_driver(order_id):
             print(f"Order {order.OrderID} assigned to driver {driver}.")
         else:
             print(f"No available driver found for order {order.OrderID}.")
+
+def get_orders_by_customer(customer_id):
+    with SessionLocal() as session:
+        orders = session.query(Order).filter(Order.CustomerID == customer_id).all()
+        return orders

@@ -1,7 +1,8 @@
 import sys
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import select
+from sqlalchemy.orm import scoped_session, sessionmaker, joinedload
 import threading
 import webbrowser
 from functools import wraps
@@ -28,7 +29,7 @@ from models.Dessert import Dessert
 from models.Customer import Customer
 from models.DiscountCode import DiscountCode
 from Customers.CustomersManagement import attempt_login, add_customer
-from Orders.OrdersManagement import place_order
+from Orders.OrdersManagement import get_orders_by_customer, place_order
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -147,27 +148,33 @@ def place_order_route():
 def orders():
     try:
         customer_id = session.get('customer_id')
-
         customer = db_session.query(Customer).get(customer_id)
-        orders = db_session.query(Order).filter_by(CustomerID=customer.CustomerID).all()
+
+        orders = customer.orders
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(type(orders))
 
         order_details = []
 
         for order in orders:
-            items = db_session.query(OrderItem).filter_by(OrderID=order.OrderID).all()
+            items = order.order_items
+
+            if items is None:
+                app.logger.warning(f"No items found for order ID {order.OrderID}")
+                continue  # Skip if there are no items
+
             item_list = []
             for item in items:
+                item_name = 'Unknown Item'
                 if item.ItemTypeID == ItemType.PIZZA:
-                    pizza = db_session.query(Pizza).get(item.ItemID)
-                    item_name = pizza.Name
+                    pizza = db_session.execute(select(Pizza).where(Pizza.PizzaID == item.ItemID)).scalars().first()
+                    item_name = pizza.Name if pizza else 'Unknown Item'
                 elif item.ItemTypeID == ItemType.DRINK:
-                    drink = db_session.query(Drink).get(item.ItemID)
-                    item_name = drink.Name
+                    drink = db_session.execute(select(Drink).where(Drink.DrinkID == item.ItemID)).scalars().first()
+                    item_name = drink.Name if drink else 'Unknown Item'
                 elif item.ItemTypeID == ItemType.DESSERT:
-                    dessert = db_session.query(Dessert).get(item.ItemID)
-                    item_name = dessert.Name
-                else:
-                    item_name = 'Unknown Item'
+                    dessert = db_session.execute(select(Dessert).where(Dessert.DessertID == item.ItemID)).scalars().first()
+                    item_name = dessert.Name if dessert else 'Unknown Item'
 
                 item_list.append({'name': item_name, 'quantity': item.Quantity})
 
@@ -178,24 +185,6 @@ def orders():
         app.logger.error(f"Error fetching orders: {e}")
         return f"An error occurred while fetching your orders: {e}", 500
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        # Retrieve form data
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        # Authenticate user
-        customer = db_session.query(Customer).filter_by(Username=username).first()
-        if customer and attempt_login(username, password):  
-            session['customer_id'] = customer.CustomerID
-            session['customer_name'] = customer.Name
-            flash('Logged in successfully.')
-            return redirect(url_for('home'))
-        else:
-            flash('Invalid username or password.')
-    
-    return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
