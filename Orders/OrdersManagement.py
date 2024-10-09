@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from Deliveries.DeliveryManagement import find_available_delivery_person
 from Orders import ItemType
 from Products.ExtrasManagement import get_price_dessert, get_price_drink
@@ -14,7 +15,25 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 def count_orders_live():
-    return int(session.query(Order).filter(Order.OrderStatus != "Completed").count())
+    return int(session.query(Order).filter(Order.OrderStatus == "Preparing").count())
+
+def get_grouping(postal_code, order_time, my_pizza_count):
+    orders = session.query(Order).filter(Order.OrderStatus == "Pending", Order.IsGrouped == False).all()
+    good_orders=[]
+    pizzas_limit=3
+    total_pizzas=my_pizza_count
+    if total_pizzas>=pizzas_limit:
+        return good_orders
+    
+    for order in orders:
+        if get_postal_code(order.CustomerID) == postal_code and count_pizzas(order.OrderID)+total_pizzas <= pizzas_limit and abs(order.OrderDate - order_time)<=timedelta(minutes=3):
+            total_pizzas+=count_pizzas(order.OrderID)
+            good_orders.append(order)
+    return good_orders
+
+#counts total amount of pizzas with said orderID
+def count_pizzas(order_id):
+    return int(session.query(OrderItem).filter(OrderItem.OrderID == order_id, OrderItem.ItemTypeID == ItemType.PIZZA).count())
 
 def create_order_item(order_id, item_type_id, item_id, quantity):
     # Fetch the price based on the item type and item ID
@@ -42,9 +61,8 @@ def create_order_item(order_id, item_type_id, item_id, quantity):
 
     return new_order_item
 
-
 # Make an order given the customer ID, order date, and a dictionary of items followed by quantities
-def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=None):
+def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=None, is_grouped=False):
     order_total_before_discount = 0
     discount_applied = False
     discount_total = 0
@@ -52,7 +70,7 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
     try:
         with SessionLocal() as session:
             # Calculate estimated delivery time
-            estimated_delivery_time = order_date + timedelta(minutes=pizzas * 10 + 30)
+            
             passed10=False
             # Calculate the total price before any discounts
             total_pizzas=0
@@ -73,6 +91,19 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
 
             for dessertID in desserts.keys():
                 order_total_before_discount += get_price_dessert(dessertID)*desserts[dessertID]
+
+            #Calculate Delivery time
+            estimated_delivery_time = order_date + timedelta(minutes=30 + count_orders_live()*2 + total_pizzas*5)
+
+            #Assign current estimated delivery time to all grouped orders
+            group_orders = get_grouping(get_postal_code(customer_id), order_date, total_pizzas)
+            if group_orders:
+                is_grouped = True
+                for order in group_orders:
+                    order.EstimatedDeliveryTime = estimated_delivery_time
+                    order.IsGrouped = True
+                    session.commit()
+
 
             # Apply discount if a discount code is provided
             if discountCode:
@@ -100,11 +131,12 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             new_order = Order(
                 CustomerID=customer_id,
                 OrderDate=order_date,
-                OrderStatus="Preparing",
+                OrderStatus="Pending",
                 EstimatedDeliveryTime=estimated_delivery_time,
                 TotalPrice=order_total,
                 DiscountApplied=discount_applied,
-                DeliveryPersonID=None
+                DeliveryPersonID=None,
+                IsGrouped=is_grouped
             )
             #Add 10 pizzas discount to next order
             if passed10:
@@ -140,7 +172,10 @@ def refresh_orders_status():
     with SessionLocal() as session:
         orders = session.query(Order).all()
         for order in orders:
-            if order.OrderStatus == "Preparing" and (order.OrderDate + timedelta(minutes=3)) < datetime.now():
+            if order.OrderStatus == "Pending" and (order.OrderDate + timedelta(minutes=5)) < datetime.now():
+                order.OrderStatus = "Preparing"
+                session.commit()
+            if order.OrderStatus == "Preparing" and (order.OrderDate + timedelta(minutes=5)) < datetime.now():
                 order.OrderStatus = "ReadyForDelivery"
                 session.commit()
             if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
@@ -204,6 +239,10 @@ def get_order_by_customer(customer_id):
     try:
         with SessionLocal() as session:
             orders = session.query(Order).filter_by(CustomerID=customer_id).order_by(Order.OrderDate.desc()).all()
+
+            # Convert TotalPrice from Decimal to float
+            for order in orders:
+                order.TotalPrice = float(order.TotalPrice)  # Convert Decimal to float
             return orders
     except SQLAlchemyError as e:
         print(f"Error fetching orders for customer {customer_id}: {e}")

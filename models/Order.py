@@ -12,6 +12,7 @@ class Order(Base):
     EstimatedDeliveryTime = Column(DateTime, nullable=True)
     TotalPrice = Column(DECIMAL(10, 2), nullable=False)
     DiscountApplied = Column(Boolean, default=False)
+    IsGrouped = Column(Boolean, default=False)
     
     # Fixing the foreign key to match the correct table name 'delivery_persons'
     DeliveryPersonID = Column(Integer, ForeignKey('delivery_persons.DeliveryPersonID'), nullable=True)

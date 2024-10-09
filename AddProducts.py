@@ -72,6 +72,10 @@ add_delivery_person(name="John", postal_code="E1 1AA")
 add_delivery_person(name="Jane", postal_code="E1 1AB")
 add_delivery_person(name="Jack", postal_code="E1 1AC")
 
+#Add a customer
+add_customer(username = "1", password = "123", name="One", postal_code="E1 1AA")
+add_customer(username = "2", password = "123", name="Two", postal_code="E1 1AA")
+
 #FOR TESTING PURPOSES
 
 # #Add a customer

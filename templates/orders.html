@@ -118,8 +118,9 @@
                     <p><strong>Total Price:</strong> ${{ "%.2f"|format(order.TotalPrice) }}</p>
                     
                     {% if order.DiscountApplied %}
-                        <p><strong>Discount Applied:</strong> ${{ "%.2f"|format(order.TotalPrice - (order.TotalPrice / 0.9)) }}</p>
-                    {% endif %}
+                    <p><strong>Discount Applied:</strong> ${{ "%.2f"|format(order.TotalPrice - (order.TotalPrice / 0.9)) }}</p>
+                {% endif %}
+                
                     
                     <p><strong>Estimated Delivery Time:</strong> {{ order.EstimatedDeliveryTime.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                     

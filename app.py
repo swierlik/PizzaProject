@@ -63,7 +63,7 @@ def home():
     except Exception as e:
         return f"An error occurred while fetching products: {e}", 500
 
-    return render_template('home.html', pizzas=pizzas, drinks=drinks, desserts=desserts)
+    return render_template('home.html', pizzas=pizzas[1:], drinks=drinks[1:], desserts=desserts[1:])
 
 @app.route('/apply_discount', methods=['POST'])
 @login_required
