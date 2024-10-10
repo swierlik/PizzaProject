@@ -1,6 +1,8 @@
 from datetime import timedelta
 from decimal import Decimal
-from Deliveries.DeliveryManagement import find_available_delivery_person
+
+from sqlalchemy import asc, desc
+from Deliveries.DeliveryManagement import find_available_delivery_person, set_availability
 from Orders import ItemType
 from Products.ExtrasManagement import get_price_dessert, get_price_drink
 from Products.PizzaManagement import get_price_pizza
@@ -33,7 +35,11 @@ def get_grouping(postal_code, order_time, my_pizza_count):
 
 #counts total amount of pizzas with said orderID
 def count_pizzas(order_id):
-    return int(session.query(OrderItem).filter(OrderItem.OrderID == order_id, OrderItem.ItemTypeID == ItemType.PIZZA).count())
+    orderItems=session.query(OrderItem).filter(OrderItem.OrderID == order_id, OrderItem.ItemTypeID == ItemType.PIZZA).all()
+    total_pizzas=0
+    for orderItem in orderItems:
+        total_pizzas+=orderItem.Quantity
+    return total_pizzas
 
 def create_order_item(order_id, item_type_id, item_id, quantity):
     # Fetch the price based on the item type and item ID
@@ -76,7 +82,7 @@ def set_is_grouped(order_id, is_grouped):
         print(f"Order {order_id} is_grouped updated to {is_grouped}.")
 
 # Make an order given the customer ID, order date, and a dictionary of items followed by quantities
-def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=None, is_grouped=False):
+def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=None, is_grouped=False, estimated_delivery_time=None):
     order_total_before_discount = 0
     discount_applied = False
     discount_total = 0
@@ -106,8 +112,10 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             for dessertID in desserts.keys():
                 order_total_before_discount += get_price_dessert(dessertID)*desserts[dessertID]
 
+            
             #Calculate Delivery time
-            estimated_delivery_time = order_date + timedelta(minutes=30 + count_orders_live()*2 + total_pizzas*5)
+            if estimated_delivery_time == None:
+                estimated_delivery_time = order_date + timedelta(minutes=30 + count_orders_live()*2 + total_pizzas*5)
 
             #Assign current estimated delivery time to all grouped orders
             group_orders = get_grouping(get_postal_code(customer_id), order_date, total_pizzas)
@@ -132,7 +140,7 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
                 discount_amount = order_total*0.1
                 order_total = order_total - discount_amount
                 discount_applied = True
-                get_customer_by_id(customer_id).IsNext10Discount = False
+                set_IsNext10Discount(customer_id, False)
                 discount_total+=discount_amount
 
             #If customer's birthday then 1 free pizza and drink
@@ -153,7 +161,7 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             )
             #Add 10 pizzas discount to next order
             if passed10:
-                get_customer_by_id(customer_id).IsNext10Discount = True
+                set_IsNext10Discount(customer_id, True)
 
             session.add(new_order)
             session.commit()  # Commit the order to the database
@@ -183,48 +191,50 @@ def get_order(order_id):
 
 def refresh_orders_status():
     with SessionLocal() as session:
-        orders = session.query(Order).all()
+        orders = session.query(Order).order_by(asc(Order.EstimatedDeliveryTime)).all()
         for order in orders:
             if order.OrderStatus == "Pending" and (order.OrderDate + timedelta(minutes=5)) < datetime.now():
                 order.OrderStatus = "Preparing"
                 session.commit()
-            if order.OrderStatus == "Preparing" and (order.OrderDate + timedelta(minutes=5)) < datetime.now():
+            if order.OrderStatus == "Preparing" and (order.OrderDate + timedelta(minutes=count_pizzas(order.OrderID)*2 + 5)) < datetime.now():
                 order.OrderStatus = "ReadyForDelivery"
                 session.commit()
-            if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
-                order.OrderStatus = "Completed"
-                order.delivery_person.IsAvailable = True
+            if order.OrderStatus == "ReadyForDelivery" and find_available_delivery_person(get_postal_code(order.CustomerID))!=None and (order.EstimatedDeliveryTime - timedelta(minutes=15)) < datetime.now():
+                assign_driver(order.EstimatedDeliveryTime)
                 session.commit()
+            if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
+                complete_order(order.OrderID)
+            if order.OrderStatus== "Completed" and (order.EstimatedDeliveryTime + timedelta(minutes=15)) < datetime.now():
+                set_availability(order.DeliveryPersonID, True)
         session.commit()
         print("Orders refreshed.")
 
 
-def assign_drivers():
+def assign_driver(estimated_delivery_time):
     with SessionLocal() as session:
-        orders = session.query(Order).filter(Order.OrderStatus == "Pending").all()
-        for order in orders:
-            driver = find_available_delivery_person(get_postal_code(order.CustomerID))
-            if driver:
+        orders = session.query(Order).filter(Order.EstimatedDeliveryTime == estimated_delivery_time).all()
+
+        driver = find_available_delivery_person(get_postal_code(orders[0].CustomerID))
+        set_availability(driver, False)
+        if driver:
+            for order in orders:
                 order.DeliveryPersonID = driver
                 order.OrderStatus = "Delivering"
-                order.delivery_person.IsAvailable = False
                 session.commit()
                 print(f"Order {order.OrderID} assigned to driver {driver}.")
-            else:
-                print(f"No available driver found for order {order.OrderID}.")
+        else:
+            print(f"No available driver found for order {orders}.")
 
-def assign_driver(order_id):
+
+def complete_order(order_id):
     with SessionLocal() as session:
         order = session.query(Order).filter(Order.OrderID == order_id).first()
-        driver = find_available_delivery_person(get_postal_code(order.CustomerID))
-        if driver:
-            order.DeliveryPersonID = driver
-            order.OrderStatus = "Delivering"
-            order.delivery_person.IsAvailable = False
+        if order:
+            order.OrderStatus = "Completed"
             session.commit()
-            print(f"Order {order.OrderID} assigned to driver {driver}.")
+            print(f"Order {order.OrderID} completed.")
         else:
-            print(f"No available driver found for order {order.OrderID}.")
+            print(f"Order {order_id} not found.")
 
 
 def can_cancel_order(order_id):

@@ -30,7 +30,7 @@ from models.Dessert import Dessert
 from models.Customer import Customer
 from models.DiscountCode import DiscountCode
 from Customers.CustomersManagement import attempt_login, add_customer
-from Orders.OrdersManagement import place_order, get_order, can_cancel_order, get_order_by_customer  # Ensure get_order is imported
+from Orders.OrdersManagement import place_order, get_order, can_cancel_order, get_order_by_customer, refresh_orders_status  # Ensure get_order is imported
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -112,6 +112,10 @@ def place_order_route():
         if not (pizzas or drinks or desserts):
             flash("You didn't order anything!")
             return redirect(url_for('home'))
+        
+        if not pizzas:
+            flash("You must order at least one pizza!")
+            return redirect(url_for('home'))
 
         # Call the place_order function
         new_order, total_cost_before_discount, discount_amount = place_order(
@@ -145,6 +149,7 @@ def place_order_route():
 @login_required
 def orders():
     try:
+        refresh_orders_status()  # Refresh the status of all orders
         customer_id = flask_session.get('customer_id')
         customer_name = flask_session.get('customer_name')
 

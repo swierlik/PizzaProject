@@ -108,3 +108,9 @@ def add_PizzasOrderedCount(customerID, amount):
 def get_postal_code(customerID):
     customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
     return customer.PostalCode
+
+def set_IsNext10Discount(customerID, value):
+    customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
+    customer.IsNext10Discount = value
+    session.commit()
+    print(f"IsNext10Discount for CustomerID '{customerID}' updated to '{customer.IsNext10Discount}'.")
