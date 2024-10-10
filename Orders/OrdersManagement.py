@@ -126,7 +126,7 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             if estimated_delivery_time == None:
                 driver = find_available_delivery_person(get_postal_code(customer_id))
                 if driver:
-                    estimated_delivery_time = order_date + timedelta(minutes=-2 + total_pizzas*2 + count_all_pizzas()*2 + 5)
+                    estimated_delivery_time = order_date + timedelta(minutes=15 + total_pizzas*2 + count_all_pizzas()*2 + 5)
                 else:
                     estimated_delivery_time = order_date + timedelta(minutes=30 + total_pizzas*2 + count_all_pizzas()*2 + 5)
 
