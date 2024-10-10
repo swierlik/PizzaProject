@@ -126,7 +126,7 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             if estimated_delivery_time == None:
                 driver = find_available_delivery_person(get_postal_code(customer_id))
                 if driver:
-                    estimated_delivery_time = order_date + timedelta(minutes=15 + total_pizzas*2 + count_all_pizzas()*2 + 5)
+                    estimated_delivery_time = order_date + timedelta(minutes=-2 + total_pizzas*2 + count_all_pizzas()*2 + 5)
                 else:
                     estimated_delivery_time = order_date + timedelta(minutes=30 + total_pizzas*2 + count_all_pizzas()*2 + 5)
 
@@ -218,7 +218,8 @@ def refresh_orders_status():
             if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
                 complete_order(order.OrderID)
             if order.OrderStatus== "Completed" and (order.EstimatedDeliveryTime + timedelta(minutes=15)) < datetime.now():
-                set_availability(order.DeliveryPersonID, True)
+                order.delivery_person.IsAvailable = True
+                session.commit()
         session.commit()
         print("Orders refreshed.")
 
@@ -233,6 +234,7 @@ def assign_driver(estimated_delivery_time):
             for order in orders:
                 order.DeliveryPersonID = driver
                 order.OrderStatus = "Delivering"
+                order.delivery_person.IsAvailable = False
                 session.commit()
                 print(f"Order {order.OrderID} assigned to driver {driver}.")
         else:
