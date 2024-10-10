@@ -17,6 +17,7 @@ from models.Drink import Drink
 from models.Dessert import Dessert
 from models.Ingredient import Ingredient
 from models.DeliveryPerson import DeliveryPerson
+from models.PizzaIngredient import PizzaIngredient
 
 
 # Function to drop all tables (clearing the database)
@@ -37,6 +38,7 @@ def drop_all_tables():
             Dessert.__table__,            # Then Dessert
             Ingredient.__table__,         # Finally Ingredient
             Customer.__table__,           # Drop Customer last
+            PizzaIngredient.__table__     # Drop PizzaIngredient last
         ])
 
         # Re-enable foreign key checks

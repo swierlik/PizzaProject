@@ -110,6 +110,17 @@ form button:hover {
     border-color: #c3e6cb;
 }
 
+/* Custom Checkbox Styles */
+.pizza-options input[type="checkbox"] {
+    accent-color: #28a745; /* Green color for the checkbox ticks */
+}
+
+.pizza-options label {
+    margin-right: 15px;
+    font-weight: normal;
+}
+
+
 /* Product Item Styles */
 .product-item {
     background: #ffffff;

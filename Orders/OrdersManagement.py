@@ -28,7 +28,7 @@ def get_grouping(postal_code, order_time, my_pizza_count):
     for order in orders:
         if get_postal_code(order.CustomerID) == postal_code and count_pizzas(order.OrderID)+total_pizzas <= pizzas_limit and abs(order.OrderDate - order_time)<=timedelta(minutes=3):
             total_pizzas+=count_pizzas(order.OrderID)
-            good_orders.append(order)
+            good_orders.append(order.OrderID)
     return good_orders
 
 #counts total amount of pizzas with said orderID
@@ -60,6 +60,20 @@ def create_order_item(order_id, item_type_id, item_id, quantity):
     )
 
     return new_order_item
+
+def set_estimated_delivery_time(order_id, estimated_delivery_time):
+    with SessionLocal() as session:
+        order = session.query(Order).get(order_id)
+        order.EstimatedDeliveryTime = estimated_delivery_time
+        session.commit()
+        print(f"Order {order_id} estimated delivery time updated to {estimated_delivery_time}.")
+
+def set_is_grouped(order_id, is_grouped):
+    with SessionLocal() as session:
+        order = session.query(Order).get(order_id)
+        order.IsGrouped = is_grouped
+        session.commit()
+        print(f"Order {order_id} is_grouped updated to {is_grouped}.")
 
 # Make an order given the customer ID, order date, and a dictionary of items followed by quantities
 def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=None, is_grouped=False):
@@ -99,10 +113,9 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             group_orders = get_grouping(get_postal_code(customer_id), order_date, total_pizzas)
             if group_orders:
                 is_grouped = True
-                for order in group_orders:
-                    order.EstimatedDeliveryTime = estimated_delivery_time
-                    order.IsGrouped = True
-                    session.commit()
+                for orderID in group_orders:
+                    set_estimated_delivery_time(orderID, estimated_delivery_time)
+                    set_is_grouped(orderID, is_grouped)
 
 
             # Apply discount if a discount code is provided

@@ -46,11 +46,25 @@
                         <h3>{{ pizza.Name }}</h3>
                         <p>{{ pizza.Description }}</p>
                         <p><strong>Price:</strong> ${{ pizza.Price }}</p>
+                        
+                        <!-- Vegan and Vegetarian checkboxes -->
+                        <div class="pizza-options">
+                            <label for="is_vegan_{{ pizza.PizzaID }}">
+                                <input type="checkbox" id="is_vegan_{{ pizza.PizzaID }}" disabled {% if pizza.IsVegan %}checked{% endif %}>
+                                Vegan
+                            </label>
+                            <label for="is_vegetarian_{{ pizza.PizzaID }}">
+                                <input type="checkbox" id="is_vegetarian_{{ pizza.PizzaID }}" disabled {% if pizza.IsVegetarian %}checked{% endif %}>
+                                Vegetarian
+                            </label>
+                        </div>
+            
                         <label for="quantity_pizza_{{ pizza.PizzaID }}">Quantity:</label>
                         <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" id="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0">
                     </div>
                 {% endfor %}
             </div>
+            
 
             <div class="product-section">
                 <h3>Drinks</h3>
