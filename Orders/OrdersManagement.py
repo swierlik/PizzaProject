@@ -41,6 +41,15 @@ def count_pizzas(order_id):
         total_pizzas+=orderItem.Quantity
     return total_pizzas
 
+# counts all pizzes in Preparing 
+def count_all_pizzas():
+    all_pizzas=0
+    with SessionLocal() as session:
+        orders = session.query(Order).filter(Order.OrderStatus=="Preparing").all()
+        for order in orders:
+            all_pizzas+=count_pizzas(order.OrderID)
+    return all_pizzas
+
 def create_order_item(order_id, item_type_id, item_id, quantity):
     # Fetch the price based on the item type and item ID
     if item_type_id == ItemType.PIZZA:
@@ -115,7 +124,11 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             
             #Calculate Delivery time
             if estimated_delivery_time == None:
-                estimated_delivery_time = order_date + timedelta(minutes=30 + count_orders_live()*2 + total_pizzas*5)
+                driver = find_available_delivery_person(get_postal_code(customer_id))
+                if driver:
+                    estimated_delivery_time = order_date + timedelta(minutes=15 + total_pizzas*2 + count_all_pizzas()*2 + 5)
+                else:
+                    estimated_delivery_time = order_date + timedelta(minutes=30 + total_pizzas*2 + count_all_pizzas()*2 + 5)
 
             #Assign current estimated delivery time to all grouped orders
             group_orders = get_grouping(get_postal_code(customer_id), order_date, total_pizzas)
