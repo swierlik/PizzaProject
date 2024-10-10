@@ -1,12 +1,13 @@
 # AddProducts.py
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from Customers.CustomersManagement import add_customer, add_discount_code
 from Deliveries.DeliveryManagement import add_delivery_person
 from Orders.OrdersManagement import place_order
 from Products.ExtrasManagement import add_dessert, add_drink
 from Products.PizzaManagement import add_pizza
 from Products.IngredientManagement import add_ingredient
+from models.Order import Order
 
 
 # Add drinks
@@ -75,6 +76,12 @@ add_discount_code("ILIKEMEN", "100% off for legends", "2025-12-31", 100)
 add_delivery_person(name="John", postal_code="E1 1AA")
 add_delivery_person(name="Jane", postal_code="E1 1AB")
 add_delivery_person(name="Jack", postal_code="E1 1AC")
+add_delivery_person(name="Jill", postal_code="E1 1AA")
+add_delivery_person(name="James", postal_code="E1 1AB")
+add_delivery_person(name="Jenny", postal_code="E1 1AC")
+add_delivery_person(name="Joe", postal_code="E1 1AA")
+add_delivery_person(name="Wen Xiao Huang", postal_code="E1 1AB")
+
 
 #Add a customer
 add_customer(username = "1", password = "123", name="One", postal_code="E1 1AA")
@@ -88,10 +95,3 @@ add_customer(username = "2", password = "123", name="Two", postal_code="E1 1AA")
 # add_customer(username = "3", password = "123", name="Three", postal_code="E1 1AC")
 # add_customer(username = "4", password = "123", name="Four", postal_code="E1 1AD")
 
-
-
-# #Add some orders
-# place_order(1, datetime.now(), {1: 1, 2: 2}, {1: 1}, {1: 1}, "DISCOUNT10")
-# place_order(2, datetime.now(), {3: 1, 4: 1}, {2: 2}, {2: 1}, "DISCOUNT20")
-# place_order(3, datetime.now(), {5: 1, 6: 1}, {1: 1}, {3: 1}, "DISCOUNT50")
-# place_order(4, datetime.now(), {7: 1, 8: 1}, {2: 1}, {4: 1})
