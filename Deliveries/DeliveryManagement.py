@@ -14,7 +14,7 @@ def add_delivery(order_id, delivery_person_id, delivery_status, delivery_time):
     session.add(new_delivery)
 
     # Update delivery person availability
-    set_availability(delivery_person_id, False)
+    set_availability(session,delivery_person_id, False)
 
     session.commit()
     print(f"Delivery for OrderID '{order_id}' added to the database.")
@@ -25,7 +25,7 @@ def update_delivery_status(deliveryID, status):
     session.commit()
     print(f"Delivery Status for DeliveryID '{deliveryID}' updated to '{status}'.")
 
-def set_availability(delivery_person_id, availability):
+def set_availability(session, delivery_person_id, availability):
     delivery_person = session.query(DeliveryPerson).filter(DeliveryPerson.DeliveryPersonID == delivery_person_id).first()
     delivery_person.Available = availability
     session.commit()
@@ -41,9 +41,6 @@ def get_delivery_status(deliveryID):
 def get_delivery_time(deliveryID):
     delivery = session.query(Delivery).filter(Delivery.DeliveryID == deliveryID).first()
     return delivery.DeliveryTime
-
-def update_status(delivertyID):
-    delivery = session.query(Delivery).filter(Delivery.DeliveryID == delivertyID).first()
 
 def add_delivery_person(name, postal_code):
     new_delivery_person = DeliveryPerson(

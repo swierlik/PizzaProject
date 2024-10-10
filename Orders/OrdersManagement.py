@@ -1,7 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal
 
-from sqlalchemy import asc, desc
+from sqlalchemy import asc
 from Deliveries.DeliveryManagement import find_available_delivery_person, set_availability
 from Orders import ItemType
 from Products.ExtrasManagement import get_price_dessert, get_price_drink
@@ -205,7 +205,7 @@ def refresh_orders_status():
             if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
                 complete_order(order.OrderID)
             if order.OrderStatus== "Completed" and (order.EstimatedDeliveryTime + timedelta(minutes=15)) < datetime.now():
-                set_availability(order.DeliveryPersonID, True)
+                set_availability(session,order.DeliveryPersonID, True)
         session.commit()
         print("Orders refreshed.")
 
@@ -215,7 +215,7 @@ def assign_driver(estimated_delivery_time):
         orders = session.query(Order).filter(Order.EstimatedDeliveryTime == estimated_delivery_time).all()
 
         driver = find_available_delivery_person(get_postal_code(orders[0].CustomerID))
-        set_availability(driver, False)
+        set_availability(session, driver, False)
         if driver:
             for order in orders:
                 order.DeliveryPersonID = driver
