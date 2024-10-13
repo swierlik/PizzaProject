@@ -24,10 +24,10 @@
         <h3>Your Order Details:</h3>
         <div class="order-details">
             <ul>
-                {% for item, quantity in ordered_items %}
+                {% for item in ordered_items %}
                     <li>
-                        <strong>{{ item.Name }} x {{ quantity }}</strong>
-                        <span>${{ "%.2f"|format(item.Price * quantity) }}</span>
+                        <strong>{{ item.item_name }} x {{ item.quantity }}</strong>
+                        <span>${{ "%.2f"|format(item.price * item.quantity) }}</span>
                     </li>
                 {% endfor %}
             </ul>

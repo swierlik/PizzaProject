@@ -30,7 +30,7 @@ from models.Dessert import Dessert
 from models.Customer import Customer
 from models.DiscountCode import DiscountCode
 from Customers.CustomersManagement import attempt_login, add_customer
-from Orders.OrdersManagement import place_order, get_order, can_cancel_order, get_order_by_customer, refresh_orders_status  # Ensure get_order is imported
+from Orders.OrdersManagement import get_order_items, order_items_to_list, place_order, get_order, can_cancel_order, get_order_by_customer, refresh_orders_status  # Ensure get_order is imported
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -128,7 +128,8 @@ def place_order_route():
         )
 
         # Retrieve ordered items for confirmation
-        ordered_items = db_session.query(OrderItem).filter_by(OrderID=new_order.OrderID).all()
+        order_items = get_order_items(new_order.OrderID)
+        ordered_items = order_items_to_list(order_items, db_session)
 
         # Render the order confirmation template
         return render_template(
@@ -144,6 +145,7 @@ def place_order_route():
         db_session.rollback()
         app.logger.error(f"Error during order placement: {e}")
         return f"An error occurred while placing your order: {e}", 500
+
 
 @app.route('/orders')
 @login_required

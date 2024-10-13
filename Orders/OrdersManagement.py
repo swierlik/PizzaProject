@@ -202,6 +202,30 @@ def get_order(order_id):
         order = session.query(Order).get(order_id)
         return order
 
+def get_order_items(order_id):
+    with SessionLocal() as session:
+        order_items = session.query(OrderItem).filter(OrderItem.OrderID == order_id).all()
+        return order_items
+    
+def order_items_to_list(order_items, session):
+    items = []
+    for item in order_items:
+        if item.ItemTypeID == ItemType.PIZZA:
+            item_name = session.query(Pizza).get(item.ItemID).Name
+        elif item.ItemTypeID == ItemType.DRINK:
+            item_name = session.query(Drink).get(item.ItemID).Name
+        elif item.ItemTypeID == ItemType.DESSERT:
+            item_name = session.query(Dessert).get(item.ItemID).Name
+        else:
+            item_name = "Unknown item"
+        items.append({
+            "item_name": item_name,
+            "quantity": item.Quantity,
+            "price": float(item.Price)
+        })
+    return items
+
+
 def refresh_orders_status():
     with SessionLocal() as session:
         orders = session.query(Order).order_by(asc(Order.EstimatedDeliveryTime)).all()
@@ -218,8 +242,7 @@ def refresh_orders_status():
             if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
                 complete_order(order.OrderID)
             if order.OrderStatus== "Completed" and (order.EstimatedDeliveryTime + timedelta(minutes=15)) < datetime.now():
-                order.delivery_person.IsAvailable = True
-                session.commit()
+                set_availability(session, order.DeliveryPersonID, True)
         session.commit()
         print("Orders refreshed.")
 
@@ -229,7 +252,7 @@ def assign_driver(estimated_delivery_time):
         orders = session.query(Order).filter(Order.EstimatedDeliveryTime == estimated_delivery_time).all()
 
         driver = find_available_delivery_person(get_postal_code(orders[0].CustomerID))
-        set_availability(driver, False)
+        set_availability(session, driver, False)
         if driver:
             for order in orders:
                 order.DeliveryPersonID = driver
