@@ -9,7 +9,6 @@ import datetime
 
 from models.Order import Order
 from models.OrderItem import OrderItem
-from Orders.ItemType import ItemType
 from models.Item import Item
 from models.Customer import Customer
 from models.DiscountCode import DiscountCode

@@ -116,7 +116,7 @@ def set_IsNext10Discount(customerID, value):
 
 def get_gender(customerID):
     customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
-    return customer
+    return customer.Gender
 
 def get_age(customerID):
     # Query the customer from the database

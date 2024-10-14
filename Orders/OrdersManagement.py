@@ -3,7 +3,6 @@ from decimal import Decimal
 import pandas as pd
 from sqlalchemy import asc
 from Deliveries.DeliveryManagement import find_available_delivery_person
-from Orders.ItemType import ItemType
 from db import SessionLocal, session
 from Customers.CustomersManagement import *
 from models.Order import Order
@@ -154,8 +153,8 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
                 order_day = order_date.day
                 order_month = order_date.month
                 if customer_day == order_day and customer_month == order_month:
-                    pizzas[1] = pizzas.get(1, 0) + 1
-                    drinks[1] = drinks.get(1, 0) + 1
+                    pizzas[11] = 1
+                    drinks[1] = 1
 
             new_order = Order(
                 CustomerID=customer_id,
