@@ -1,23 +1,21 @@
 from Products.IngredientManagement import get_price_ingredient, is_vegan_ingredient, is_vegetarian_ingredient
 from models.Ingredient import Ingredient
-from models.PizzaIngredient import PizzaIngredient
-from models.Pizza import Pizza
+from models.ItemIngredient import ItemIngredient
+from models.Item import Item
 from db import session
 from sqlalchemy.exc import SQLAlchemyError
-
 
 def add_pizza(name, ingredients, description_preset=None, set_price=999):
     try:
         price = 0.0
-        all_ingredients_vegetarian = True  # Rename to avoid conflict with the function
-        all_ingredients_vegan = True  # Rename to avoid conflict with the function
-        
-        description=""
+        all_ingredients_vegetarian = True
+        all_ingredients_vegan = True
+        description = ""
 
         for ingredient_id in ingredients:
             price += get_price_ingredient(ingredient_id)
             description += f'{get_ingredient_name(ingredient_id)}, '
-            if not is_vegetarian_ingredient(ingredient_id):  # Use `not` for better readability
+            if not is_vegetarian_ingredient(ingredient_id):
                 all_ingredients_vegetarian = False
             if not is_vegan_ingredient(ingredient_id):
                 all_ingredients_vegan = False
@@ -29,17 +27,18 @@ def add_pizza(name, ingredients, description_preset=None, set_price=999):
         if set_price != 999:
             price = set_price
 
-        new_pizza = Pizza(
+        new_item = Item(
+            ItemType='PIZZA',
             Name=name,
             Description=description,
             Price=price,
             IsVegetarian=all_ingredients_vegetarian,  
             IsVegan=all_ingredients_vegan  
         )
-        session.add(new_pizza)
+        session.add(new_item)
         session.commit()
 
-        pizza_id = new_pizza.PizzaID
+        pizza_id = new_item.ItemID
 
         for ingredient_id in ingredients:
             session.add(make_pizza_ingredient(pizza_id, ingredient_id))
@@ -51,17 +50,13 @@ def add_pizza(name, ingredients, description_preset=None, set_price=999):
         session.rollback()
         print(f"Error occurred: {e}")
 
-def get_price_pizza(pizzaID):
-    pizza = session.query(Pizza).filter(Pizza.PizzaID == pizzaID).first()
-    return float(pizza.Price)
-
 def make_pizza_ingredient(pizza_id, ingredient_id):
-    new_pizza_ingredient = PizzaIngredient(
-        PizzaID=pizza_id,
+    new_pizza_ingredient = ItemIngredient(
+        ItemID=pizza_id,
         IngredientID=ingredient_id
     )
     return new_pizza_ingredient
 
 def get_ingredient_name(ingredientID):
-    ingredient=session.query(Ingredient).filter(Ingredient.IngredientID == ingredientID).first()
+    ingredient = session.query(Ingredient).filter(Ingredient.IngredientID == ingredientID).first()
     return ingredient.Name

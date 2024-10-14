@@ -1,10 +1,9 @@
-from models.Drink import Drink
-from models.Dessert import Dessert
+from models.Item import Item
 from db import session
 
-##DRINKS
 def add_drink(name, price):
-    new_drink = Drink(
+    new_drink = Item(
+        ItemType='DRINK',
         Name=name,
         Price=price
     )
@@ -13,13 +12,12 @@ def add_drink(name, price):
     print(f"Drink '{name}' added to the database.")
 
 def get_price_drink(drinkID):
-    drink = session.query(Drink).filter(Drink.DrinkID == drinkID).first()
+    drink = session.query(Item).filter(Item.ItemID == drinkID, Item.ItemType == 'DRINK').first()
     return float(drink.Price)
 
-
-##DESSERTS
 def add_dessert(name, price):
-    new_dessert = Dessert(
+    new_dessert = Item(
+        ItemType='DESSERT',
         Name=name,
         Price=price
     )
@@ -28,7 +26,5 @@ def add_dessert(name, price):
     print(f"Dessert '{name}' added to the database.")
 
 def get_price_dessert(dessertID):
-    dessert = session.query(Dessert).filter(Dessert.DessertID == dessertID).first()
+    dessert = session.query(Item).filter(Item.ItemID == dessertID, Item.ItemType == 'DESSERT').first()
     return float(dessert.Price)
-
-

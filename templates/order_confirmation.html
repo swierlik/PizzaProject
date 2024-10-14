@@ -27,7 +27,7 @@
                 {% for item in ordered_items %}
                     <li>
                         <strong>{{ item.item_name }} x {{ item.quantity }}</strong>
-                        <span>${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                        <span>${{ "%.2f"|format(item.price) }}</span>
                     </li>
                 {% endfor %}
             </ul>
@@ -37,7 +37,7 @@
             <p><strong>Discount Applied:</strong> -${{ "%.2f"|format(discount_amount) }}</p>
         {% endif %}
         <p><strong>Total Cost After Discount:</strong> ${{ "%.2f"|format(total_cost) }}</p>
-        <p><strong>Estimated Delivery Time:</strong> {{ estimated_time }} minutes</p>
+        <p><strong>Estimated Delivery Time:</strong> {{ estimated_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
         <a href="{{ url_for('home') }}" class="button">Back to Menu</a>
     </div>
 

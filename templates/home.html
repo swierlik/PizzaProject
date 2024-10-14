@@ -49,18 +49,18 @@
                         
                         <!-- Vegan and Vegetarian checkboxes -->
                         <div class="pizza-options">
-                            <label for="is_vegan_{{ pizza.PizzaID }}">
-                                <input type="checkbox" id="is_vegan_{{ pizza.PizzaID }}" disabled {% if pizza.IsVegan %}checked{% endif %}>
+                            <label for="is_vegan_{{ pizza.ItemID }}">
+                                <input type="checkbox" id="is_vegan_{{ pizza.ItemID }}" disabled {% if pizza.IsVegan %}checked{% endif %}>
                                 Vegan
                             </label>
-                            <label for="is_vegetarian_{{ pizza.PizzaID }}">
-                                <input type="checkbox" id="is_vegetarian_{{ pizza.PizzaID }}" disabled {% if pizza.IsVegetarian %}checked{% endif %}>
+                            <label for="is_vegetarian_{{ pizza.ItemID }}">
+                                <input type="checkbox" id="is_vegetarian_{{ pizza.ItemID }}" disabled {% if pizza.IsVegetarian %}checked{% endif %}>
                                 Vegetarian
                             </label>
                         </div>
             
-                        <label for="quantity_pizza_{{ pizza.PizzaID }}">Quantity:</label>
-                        <input type="number" name="quantity_pizza_{{ pizza.PizzaID }}" id="quantity_pizza_{{ pizza.PizzaID }}" min="0" value="0">
+                        <label for="quantity_pizza_{{ pizza.ItemID }}">Quantity:</label>
+                        <input type="number" name="quantity_pizza_{{ pizza.ItemID }}" id="quantity_pizza_{{ pizza.ItemID }}" min="0" value="0">
                     </div>
                 {% endfor %}
             </div>
@@ -72,8 +72,8 @@
                     <div class="product-item">
                         <h3>{{ drink.Name }}</h3>
                         <p><strong>Price:</strong> ${{ drink.Price }}</p>
-                        <label for="quantity_drink_{{ drink.DrinkID }}">Quantity:</label>
-                        <input type="number" name="quantity_drink_{{ drink.DrinkID }}" id="quantity_drink_{{ drink.DrinkID }}" min="0" value="0">
+                        <label for="quantity_drink_{{ drink.ItemID }}">Quantity:</label>
+                        <input type="number" name="quantity_drink_{{ drink.ItemID }}" id="quantity_drink_{{ drink.ItemID }}" min="0" value="0">
                     </div>
                 {% endfor %}
             </div>
@@ -84,8 +84,8 @@
                     <div class="product-item">
                         <h3>{{ dessert.Name }}</h3>
                         <p><strong>Price:</strong> ${{ dessert.Price }}</p>
-                        <label for="quantity_dessert_{{ dessert.DessertID }}">Quantity:</label>
-                        <input type="number" name="quantity_dessert_{{ dessert.DessertID }}" id="quantity_dessert_{{ dessert.DessertID }}" min="0" value="0">
+                        <label for="quantity_dessert_{{ dessert.ItemID }}">Quantity:</label>
+                        <input type="number" name="quantity_dessert_{{ dessert.ItemID }}" id="quantity_dessert_{{ dessert.ItemID }}" min="0" value="0">
                     </div>
                 {% endfor %}
             </div>

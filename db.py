@@ -12,13 +12,10 @@ from models.DiscountCode import DiscountCode
 from models.CustomerDiscount import CustomerDiscount
 from models.Order import Order
 from models.OrderItem import OrderItem
-from models.Pizza import Pizza
-from models.Drink import Drink
-from models.Dessert import Dessert
+from models.Item import Item
 from models.Ingredient import Ingredient
 from models.DeliveryPerson import DeliveryPerson
-from models.PizzaIngredient import PizzaIngredient
-
+from models.ItemIngredient import ItemIngredient
 
 # Function to drop all tables (clearing the database)
 def drop_all_tables():
@@ -28,17 +25,15 @@ def drop_all_tables():
 
         # Drop tables in reverse order of dependencies
         Base.metadata.drop_all(bind=engine, tables=[
-            CustomerDiscount.__table__,  # Drop CustomerDiscount first
-            DiscountCode.__table__,       # Then DiscountCode
-            OrderItem.__table__,          # Then OrderItem
-            Order.__table__,              # Then Order
-            DeliveryPerson.__table__,     # Then DeliveryPerson
-            Pizza.__table__,              # Then Pizza
-            Drink.__table__,              # Then Drink
-            Dessert.__table__,            # Then Dessert
-            Ingredient.__table__,         # Finally Ingredient
-            Customer.__table__,           # Drop Customer last
-            PizzaIngredient.__table__     # Drop PizzaIngredient last
+            CustomerDiscount.__table__,    # Drop CustomerDiscount first
+            DiscountCode.__table__,        # Then DiscountCode
+            OrderItem.__table__,           # Then OrderItem
+            Order.__table__,               # Then Order
+            DeliveryPerson.__table__,      # Then DeliveryPerson
+            ItemIngredient.__table__,     # Then PizzaIngredient
+            Item.__table__,                # Then Item
+            Ingredient.__table__,          # Then Ingredient
+            Customer.__table__,            # Drop Customer last
         ])
 
         # Re-enable foreign key checks
