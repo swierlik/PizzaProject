@@ -2,6 +2,7 @@ from models.Drink import Drink
 from models.Dessert import Dessert
 from db import session
 
+##DRINKS
 def add_drink(name, price):
     new_drink = Drink(
         Name=name,

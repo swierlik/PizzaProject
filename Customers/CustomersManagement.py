@@ -91,7 +91,6 @@ def attempt_login(username, password):
     return False
 
 def hash_password(password):
-    # Use hashlib with SHA-256 to hash the password
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password
 
@@ -114,3 +113,28 @@ def set_IsNext10Discount(customerID, value):
     customer.IsNext10Discount = value
     session.commit()
     print(f"IsNext10Discount for CustomerID '{customerID}' updated to '{customer.IsNext10Discount}'.")
+
+def get_gender(customerID):
+    customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
+    return customer
+
+def get_age(customerID):
+    # Query the customer from the database
+    customer = session.query(Customer).filter(Customer.CustomerID == customerID).first()
+    
+    # Check if the customer's birthdate exists
+    if customer.Birthdate is None:
+        return -1  # Return -1 or handle the missing birthdate appropriately
+    
+    # Calculate age
+    today = datetime.now().date()
+    birthdate = customer.Birthdate
+    
+    # Calculate the difference in years
+    age = today.year - birthdate.year
+    
+    # Adjust the age if the birthdate hasn't occurred yet this year
+    if (today.month, today.day) < (birthdate.month, birthdate.day):
+        age -= 1
+    
+    return age

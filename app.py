@@ -1,5 +1,4 @@
 # app.py
-
 import sys
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session as flask_session, jsonify
@@ -8,17 +7,6 @@ import threading
 import webbrowser
 from functools import wraps
 import datetime
-
-# Add project root to sys.path to resolve imports
-project_root = os.path.dirname(os.path.abspath(__file__))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-# Import database session and Base
-from db import Base, engine, SessionLocal, create_all_tables  # Ensure SessionLocal is imported
-
-# Set up scoped_session
-db_session = scoped_session(sessionmaker(bind=engine))
 
 # Import Models
 from models.Order import Order
@@ -31,6 +19,16 @@ from models.Customer import Customer
 from models.DiscountCode import DiscountCode
 from Customers.CustomersManagement import attempt_login, add_customer
 from Orders.OrdersManagement import get_order_items, order_items_to_list, place_order, get_order, can_cancel_order, get_order_by_customer, refresh_orders_status  # Ensure get_order is imported
+
+# Add project root to sys.path to resolve imports
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from db import Base, engine, SessionLocal
+
+# Set up scoped_session
+db_session = scoped_session(sessionmaker(bind=engine))
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret key
@@ -131,6 +129,8 @@ def place_order_route():
         order_items = get_order_items(new_order.OrderID)
         ordered_items = order_items_to_list(order_items, db_session)
 
+        flask_session.pop('discount_code', None)  # Remove discount code from session
+
         # Render the order confirmation template
         return render_template(
             'order_confirmation.html',
@@ -195,6 +195,7 @@ def cancel_order(order_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    flask_session.clear()  # Clear the session
     if request.method == 'POST':
         # Retrieve form data
         username = request.form.get('username')
@@ -264,21 +265,10 @@ def logout():
     flash('You have been logged out.')
     return redirect(url_for('home'))
 
-# Optional: Route to list all endpoints for debugging
-@app.route('/routes')
-def list_routes():
-    output = []
-    for rule in app.url_map.iter_rules():
-        methods = ','.join(sorted(rule.methods))
-        try:
-            url = url_for(rule.endpoint, **(rule.defaults or {}))
-        except Exception:
-            url = "Unresolvable URL"
-        line = f"{rule.endpoint:30s} {methods:25s} {url}"
-        output.append(line)
-    return "<pre>" + "\n".join(sorted(output)) + "</pre>"
+
 
 if __name__ == '__main__':
+
     if not os.environ.get('WERKZEUG_RUN_MAIN'):  # Check if the reloader process is running
         threading.Timer(1, open_browser).start()
     app.run(debug=True)

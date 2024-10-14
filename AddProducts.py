@@ -51,7 +51,7 @@ add_ingredient("Nutella", 0.75, is_vegetarian=True, is_vegan=False)
 
 # Add pizzas
 
-add_pizza("Birthday Pizza", [1, 2, 3, 17], 0.00)
+add_pizza("Birthday Pizza", [1, 2, 3, 17], set_price=0.00)
 add_pizza("Margherita", [1, 2, 3, 8, 11])
 add_pizza("Pepperoni", [1, 2, 3, 4, 8, 11])
 add_pizza("Vegetarian", [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])

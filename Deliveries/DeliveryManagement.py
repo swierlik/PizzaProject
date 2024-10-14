@@ -58,4 +58,7 @@ def find_available_delivery_person(postal_code):
         print("No available delivery person found.")
         return None
     return delivery_person.DeliveryPersonID
+
+def get_driver_by_id(driver_id):
+    return session.query(DeliveryPerson).filter(DeliveryPerson.DeliveryPersonID == driver_id).first()
     

@@ -1,8 +1,8 @@
 from datetime import timedelta
 from decimal import Decimal
-
+import pandas as pd
 from sqlalchemy import asc, desc
-from Deliveries.DeliveryManagement import find_available_delivery_person, set_availability
+from Deliveries.DeliveryManagement import find_available_delivery_person, get_driver_by_id, set_availability
 from Orders import ItemType
 from Products.ExtrasManagement import get_price_dessert, get_price_drink
 from Products.PizzaManagement import get_price_pizza
@@ -143,6 +143,7 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
             if discountCode:
                 discount_amount = get_discount_by_code(discountCode, order_total_before_discount)
                 order_total = order_total_before_discount - discount_amount
+                print(f"\n\nDiscount applied by code: {discountCode}!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
                 discount_applied = True
                 discount_total+=discount_amount
             else:
@@ -153,13 +154,24 @@ def place_order(customer_id, order_date, pizzas, drinks, desserts, discountCode=
                 discount_amount = order_total*0.1
                 order_total = order_total - discount_amount
                 discount_applied = True
+                print("\n\nDiscount applied by 10th pizza!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
                 set_IsNext10Discount(customer_id, False)
                 discount_total+=discount_amount
 
-            #If customer's birthday then 1 free pizza and drink
-            if get_customer_by_id(customer_id).Birthdate == order_date.date():
-                pizzas[0] = 1
-                drinks[0] = 1
+
+            #Birthday Pizza + drink
+            if get_customer_by_id(customer_id).Birthdate:
+                customer_birth = get_customer_by_id(customer_id).Birthdate
+                # Extract day and month from birthdate and order date
+                customer_day = customer_birth.day
+                customer_month = customer_birth.month
+                order_day = order_date.day
+                order_month = order_date.month
+
+                # If the order is placed on the customer's birthday, give a free pizza and drink
+                if customer_day == order_day and customer_month == order_month:
+                    pizzas[1] = 1
+                    drinks[1] = 1
 
             # Create new order
             new_order = Order(
@@ -237,26 +249,28 @@ def refresh_orders_status():
                 order.OrderStatus = "ReadyForDelivery"
                 session.commit()
             if order.OrderStatus == "ReadyForDelivery" and find_available_delivery_person(get_postal_code(order.CustomerID))!=None and (order.EstimatedDeliveryTime - timedelta(minutes=15)) < datetime.now():
-                assign_driver(order.EstimatedDeliveryTime)
+                assign_driver(order.EstimatedDeliveryTime, get_postal_code(order.CustomerID))
                 session.commit()
             if order.OrderStatus == "Delivering" and order.EstimatedDeliveryTime < datetime.now():
                 complete_order(order.OrderID)
             if order.OrderStatus== "Completed" and (order.EstimatedDeliveryTime + timedelta(minutes=15)) < datetime.now():
-                set_availability(session, order.DeliveryPersonID, True)
+                order.delivery_person.IsAvailable = True
+                session.commit()
         session.commit()
         print("Orders refreshed.")
 
 
-def assign_driver(estimated_delivery_time):
+def assign_driver(estimated_delivery_time, postal_code):
     with SessionLocal() as session:
         orders = session.query(Order).filter(Order.EstimatedDeliveryTime == estimated_delivery_time).all()
+        print(f"Assigning driver to orders {orders}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n.")
+        driver = find_available_delivery_person(postal_code)
 
-        driver = find_available_delivery_person(get_postal_code(orders[0].CustomerID))
-        set_availability(session, driver, False)
         if driver:
             for order in orders:
                 order.DeliveryPersonID = driver
                 order.OrderStatus = "Delivering"
+                order.delivery_person.IsAvailable = False
                 session.commit()
                 print(f"Order {order.OrderID} assigned to driver {driver}.")
         else:
@@ -307,3 +321,55 @@ def get_order_by_customer(customer_id):
     except SQLAlchemyError as e:
         print(f"Error fetching orders for customer {customer_id}: {e}")
         return []
+
+def get_financial_summary(month=None, postal_code=None, gender=None, age_group=None):
+    '''
+    Get the financial summary for a given month, postal_code, genderm and age group also with option "any" igf you want to pick all
+    '''
+    if age_group:
+        age_group = age_group.split("-")
+
+    try:
+        with SessionLocal() as session:
+            orders = session.query(Order).all()
+            if month:
+                orders = [order for order in orders if order.OrderDate.strftime("%B") == month]
+            if postal_code:
+                orders = [order for order in orders if get_postal_code(order.CustomerID) == postal_code]
+            if gender:
+                orders = [order for order in orders if get_gender(order.CustomerID) == gender]
+            if age_group:
+                orders = [order for order in orders if float(age_group[0]) <= get_age(order.CustomerID) <= float(age_group[1])]
+
+        #Transform orders intoa  pd.dataframe
+        orders = pd.DataFrame([order.__dict__ for order in orders])
+        if "_sa_instance_state" in orders.columns:
+            orders.drop(columns=["_sa_instance_state"], inplace=True)
+        #change datatype of total price to float
+        orders["TotalPrice"] = orders["TotalPrice"].astype(float)
+
+        return orders
+    except SQLAlchemyError as e:
+        print(f"Error fetching financial summary: {e}")
+        return []
+    
+def get_orders_by_status(status):
+    with SessionLocal() as session:
+        orders = session.query(Order).filter_by(OrderStatus=status).all()
+        return orders
+    
+#orders_to_pizzas generates a dictionary of pizzaNames followed by total quantity from a list of orders
+def orders_to_pizzas():
+    orders = get_orders_by_status("Preparing")
+    pizzas = {}
+    for order in orders:
+        order_items = get_order_items(order.OrderID)
+        for order_item in order_items:
+            if order_item.ItemTypeID == ItemType.PIZZA:
+                pizza = session.query(Pizza).get(order_item.ItemID)
+                if pizza.Name in pizzas:
+                    pizzas[pizza.Name] += order_item.Quantity
+                else:
+                    pizzas[pizza.Name] = order_item.Quantity
+    df=pd.DataFrame(pizzas.items(), columns=["Pizza", "Quantity"])
+    return df

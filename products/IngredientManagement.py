@@ -1,4 +1,3 @@
-##INGREDIENTS
 from models.Ingredient import Ingredient
 from db import session
 
